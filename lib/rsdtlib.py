@@ -781,7 +781,8 @@ class Window:
                  bands_opt,
                  bands_sar,
                  generate_labels,
-                 alpha = None):
+                 alpha = None,
+                 n_threads = 1):
         import math
 
         self.tf_record_path = tf_record_path
@@ -797,6 +798,7 @@ class Window:
         self.bands_sar = bands_sar
         self.generate_labels = generate_labels
         self.alpha = alpha
+        self.n_threads = n_threads
 
 
     def _parse_tfr_element(self, element):
@@ -846,7 +848,10 @@ class Window:
 
         ref = timestamp.batch(self.buffer_size).map(first_only)
 
-        sub = zip(timestamp, sar_ascending, sar_descending, opt)
+        sub = tf.data.Dataset.zip((timestamp,
+                                   sar_ascending,
+                                   sar_descending,
+                                   opt))
         batch = sub.batch(self.buffer_size)
         selection = tf.data.Dataset.zip((batch, ref))
         windows = selection.unbatch()                                          \
@@ -861,7 +866,10 @@ class Window:
     def _get_window(self, timestamp, sar_ascending, sar_descending, opt):
         import tensorflow as tf
 
-        sub = zip(timestamp, sar_ascending, sar_descending, opt)
+        sub = tf.data.Dataset.zip((timestamp,
+                                   sar_ascending,
+                                   sar_descending,
+                                   opt))
         batch = sub.batch(self.buffer_size)
         return batch
 
@@ -869,7 +877,10 @@ class Window:
     def _get_window2(self, timestamp, sar_ascending, sar_descending, opt):
         import tensorflow as tf
 
-        sub = zip(timestamp, sar_ascending, sar_descending, opt)
+        sub = tf.data.Dataset.zip((timestamp,
+                                   sar_ascending,
+                                   sar_descending,
+                                   opt))
         batch = sub.batch(self.buffer_size*2)
         return batch
 
@@ -992,8 +1003,8 @@ class Window:
 
         input_ds = tf.data.TFRecordDataset(sample_file,
                                          compression_type="GZIP",
-                                         num_parallel_reads=4)                 \
-                        .map(self._parse_tfr_element, num_parallel_calls=4)
+                                         num_parallel_reads=1)                 \
+                        .map(self._parse_tfr_element, num_parallel_calls=1)
 
         if self.generate_labels:
             # Construct previous window (starting from [] up to [buffer_size]
@@ -1225,6 +1236,7 @@ class Window:
     def preproc(self):
         import numpy as np
         import sys
+        import tensorflow as tf
         sys.path.append('../label/')
         from label import Synthetic_Label
 
@@ -1243,17 +1255,35 @@ class Window:
 
         print("Computing beta coefficients for tiles (y, x):")
         all_coeffs = []
+        list_tiles = []
         for j in range(0, num_tiles_y):
             for i in range(0, num_tiles_x):
-                print("{}, {}".format(j, i))
-                all_coeffs.append([])
-                sample_file = self.tf_record_path +                            \
-                              "{}_{}.tfrecords".format(j, i)
-                windows_ds = self._annotate_ds(sample_file)
-                coeffs_ds = windows_ds.map(generate_beta_coeffs,
-                                           num_parallel_calls=1)
-                for coeff in coeffs_ds:
-                    all_coeffs[j*num_tiles_x+i].append(coeff)
+                list_tiles.append((j, i))
+
+        def get_coeffs(tile):
+            print("{}, {}".format(tile[0], tile[1]))
+            sample_file = self.tf_record_path +                                \
+                          "{}_{}.tfrecords".format(tile[0], tile[1])
+            windows_ds = self._annotate_ds(sample_file)
+            coeffs_ds = windows_ds.map(generate_beta_coeffs,
+                                       num_parallel_calls=1)
+
+            res = []
+            for coeff in coeffs_ds:
+                res.append(coeff)
+            return np.array(res)
+
+        co_ds = tf.data.Dataset.from_generator(lambda: list_tiles, tf.uint64)
+        co_ds = co_ds.map(lambda tile: tf.py_function(
+                                        get_coeffs,
+                                        [tile],
+                                        [tf.float32]),
+                                        num_parallel_calls=self.n_threads)
+
+        # Attention: Order of tiles is not guaranteed due to parallelism!
+        all_coeffs = []
+        for item in co_ds:
+            all_coeffs.append(item[0])
 
         # Layout of all_coeffs:
         # [num_tiles_y*num_tiles_x][win#][2][3]
