@@ -782,7 +782,8 @@ class Window:
                  bands_sar,
                  generate_labels,
                  alpha = None,
-                 n_threads = 1):
+                 n_threads = 1,
+                 use_new_save = False):
         import math
 
         self.tf_record_path = tf_record_path
@@ -799,6 +800,10 @@ class Window:
         self.generate_labels = generate_labels
         self.alpha = alpha
         self.n_threads = n_threads
+        self.use_new_save = use_new_save
+
+#        if self.use_new_save == False:
+#            assert self.n_threads == 1, "TFRecordWriter only allows one thread!"
 
 
     def _parse_tfr_element(self, element):
@@ -1154,7 +1159,29 @@ class Window:
 
     def _write_training_data(self, tf_record_out_file, dataset, window_betas):
         import tensorflow as tf
+        import sys
+        sys.path.append('../label/')
         from label import Synthetic_Label
+
+        def _get_sample_label(data, betas):
+            res = (tf.concat(
+                        # Only serialize current window (index 1)
+                        [data[1][1][:, :, :, :],  # SAR ascending
+                         data[1][2][:, :, :, :],  # SAR descending
+                         data[1][3][:, :, :, :]], # Optical
+                         axis=-1),
+                   tf.ensure_shape(tf.numpy_function(
+                        Synthetic_Label.compute_label_S2_S1_ENDISI,
+                        [data[1][1][:, :, :, :], # SAR ascending
+                         data[1][2][:, :, :, :], # SAR descending
+                         data[1][3][:, :, :, :], # Optical
+                         data[0][3][:, :, :, :], # Optical (prev)
+                         data[2][3][:, :, :, :], # Optical (next)
+                         self.alpha,
+                         betas[0],
+                         betas[1]], tf.float32),
+                        [self.tile_size_y, self.tile_size_x]))
+            return res
 
         def _bytes_feature(value):
             if isinstance(value, type(tf.constant(0))):
@@ -1162,49 +1189,49 @@ class Window:
             return tf.train.Feature(
                         bytes_list=tf.train.BytesList(value=[value]))
 
-        tfr_options = tf.io.TFRecordOptions(compression_type="GZIP")
-        this_tfr = tf.io.TFRecordWriter(tf_record_out_file, options=tfr_options)
-
         betas_ds = tf.data.Dataset.from_tensor_slices(window_betas)
-        for elem in zip(dataset, betas_ds):
-            data = elem[0]
-            betas = elem[1]
+        comb_ds = tf.data.Dataset.zip((dataset, betas_ds))
+        comb_ds = comb_ds.map(_get_sample_label)
+        if self.use_new_save:
+#            tf.data.Dataset.save(comb_ds, tf_record_out_file, "GZIP")
+            tf.data.experimental.save(comb_ds, tf_record_out_file, "GZIP")
 
-            # Only serialize current window (index 1)
-            feature = tf.io.serialize_tensor(tf.concat(
-                            [data[1][1][:, :, :, :],  # SAR ascending
-                             data[1][2][:, :, :, :],  # SAR descending
-                             data[1][3][:, :, :, :]], # Optical
-                            axis=-1))
+        else: # self.use_new_save == False
+            tfr_options = tf.io.TFRecordOptions(compression_type="GZIP")
+            this_tfr = tf.io.TFRecordWriter(
+                                tf_record_out_file,
+                                options=tfr_options)
 
-            computed_label = tf.ensure_shape(tf.numpy_function(
-                                    Synthetic_Label.compute_label_S2_S1_ENDISI,
-                                    [data[1][1][:, :, :, :], # SAR ascending
-                                     data[1][2][:, :, :, :], # SAR descending
-                                     data[1][3][:, :, :, :], # Optical
-                                     data[0][3][:, :, :, :], # Optical (prev)
-                                     data[2][3][:, :, :, :], # Optical (next)
-                                     self.alpha,
-                                     betas[0],
-                                     betas[1]], tf.float32),
-                                    [self.tile_size_y, self.tile_size_x])
+            for item in comb_ds:
+                feature = tf.io.serialize_tensor(item[0])
+                label = tf.io.serialize_tensor(item[1])
 
-            label = tf.io.serialize_tensor(computed_label)
+                sample_record = {
+                    "Feature": _bytes_feature(feature),
+                    "Label": _bytes_feature(label)
+                }
 
-            sample_record = {
-                "Feature": _bytes_feature(feature),
-                "Label": _bytes_feature(label)
-            }
+                sample = tf.train.Example(features=tf.train.Features(
+                                                        feature=sample_record))
+                this_tfr.write(sample.SerializeToString())
 
-            sample = tf.train.Example(
-                            features=tf.train.Features(feature=sample_record))
-            this_tfr.write(sample.SerializeToString())
+            this_tfr.close()
 
-        this_tfr.close()
 
     def _write_inference_data(self, tf_record_out_file, dataset):
         import tensorflow as tf
+        import sys
+        sys.path.append('../label/')
         from label import Synthetic_Label
+
+        def _get_sample(data):
+            res = tf.concat(
+                        # Only serialize current window (index 1)
+                        [data[1][1][:, :, :, :],  # SAR ascending
+                         data[1][2][:, :, :, :],  # SAR descending
+                         data[1][3][:, :, :, :]], # Optical
+                         axis=-1)
+            return res
 
         def _bytes_feature(value):
             if isinstance(value, type(tf.constant(0))):
@@ -1212,26 +1239,30 @@ class Window:
             return tf.train.Feature(
                         bytes_list=tf.train.BytesList(value=[value]))
 
-        tfr_options = tf.io.TFRecordOptions(compression_type="GZIP")
-        this_tfr = tf.io.TFRecordWriter(tf_record_out_file, options=tfr_options)
+        comb_ds = dataset.map(_get_sample)
+        if self.use_new_save:
+#            tf.data.Dataset.save(comb_ds, tf_record_out_file, "GZIP")
+            tf.data.experimental.save(comb_ds, tf_record_out_file, "GZIP")
 
-        for data in dataset:
-            # Only serialize current window (index 1)
-            feature = tf.io.serialize_tensor(tf.concat(
-                            [data[0][1][:, :, :, :],  # SAR ascending
-                             data[0][2][:, :, :, :],  # SAR descending
-                             data[0][3][:, :, :, :]], # Optical
-                            axis=-1))
+        else: # self.use_new_save == False
+            tfr_options = tf.io.TFRecordOptions(compression_type="GZIP")
+            this_tfr = tf.io.TFRecordWriter(
+                                tf_record_out_file,
+                                options=tfr_options)
 
-            sample_record = {
-                "Feature": _bytes_feature(feature),
-            }
+            for item in comb_ds:
+                feature = tf.io.serialize_tensor(item[0])
 
-            sample = tf.train.Example(
-                            features=tf.train.Features(feature=sample_record))
-            this_tfr.write(sample.SerializeToString())
+                sample_record = {
+                    "Feature": _bytes_feature(feature),
+                }
 
-        this_tfr.close()
+                sample = tf.train.Example(features=tf.train.Features(
+                                                        feature=sample_record))
+                this_tfr.write(sample.SerializeToString())
+
+            this_tfr.close()
+
 
     def preproc(self):
         import numpy as np
@@ -1248,18 +1279,7 @@ class Window:
                         [prev_win[3], next_win[3]], tf.float32),
                         [2, 3])
 
-        if not self.generate_labels:
-            return None
-
-        num_tiles_y, num_tiles_x = self._get_num_tiles()
-
-        print("Computing beta coefficients for tiles (y, x):")
-        all_coeffs = []
-        list_tiles = []
-        for j in range(0, num_tiles_y):
-            for i in range(0, num_tiles_x):
-                list_tiles.append((j, i))
-
+        # Helper for parallel execution...
         def get_coeffs(tile):
             print("{}, {}".format(tile[0], tile[1]))
             sample_file = self.tf_record_path +                                \
@@ -1272,6 +1292,18 @@ class Window:
             for coeff in coeffs_ds:
                 res.append(coeff)
             return np.array(res)
+
+
+        if not self.generate_labels:
+            return None
+
+        num_tiles_y, num_tiles_x = self._get_num_tiles()
+
+        print("Computing beta coefficients for tiles (y, x):")
+        list_tiles = []
+        for j in range(0, num_tiles_y):
+            for i in range(0, num_tiles_x):
+                list_tiles.append((j, i))
 
         co_ds = tf.data.Dataset.from_generator(lambda: list_tiles, tf.uint64)
         co_ds = co_ds.map(lambda tile: tf.py_function(
@@ -1309,6 +1341,29 @@ class Window:
     def write_tf_files(self, dst_dir, selector, window_betas = None):
         import os
         import datetime
+        import tensorflow as tf
+
+        def write_data(tile):
+            print("{}, {}".format(tile[0], tile[1]))
+            sample_file = self.tf_record_path +                                \
+                          "{}_{}.tfrecords".format(tile[0], tile[1])
+            windows_ds = self._annotate_ds(sample_file)
+            if self.generate_labels:
+                self._write_training_data(
+                                self.tf_record_out_path +                      \
+                                dst_dir +                                      \
+                                "{}_{}.tfrecords".format(tile[0], tile[1]),    \
+                                windows_ds,                                    \
+                                window_betas)
+
+            else: # self.generate_labels == False
+                self._write_inference_data(
+                                self.tf_record_out_path +                      \
+                                dst_dir +                                      \
+                                "{}_{}.tfrecords".format(tile[0], tile[1]),    \
+                                windows_ds)
+            return 0
+
 
         if not os.path.isdir(self.tf_record_out_path + dst_dir):
             os.mkdir(self.tf_record_out_path + dst_dir)
@@ -1316,25 +1371,20 @@ class Window:
         num_tiles_y, num_tiles_x = self._get_num_tiles()
 
         print("Generating data ({}) for tiles (y, x):".format(dst_dir))
+        list_tiles = []
         for j in range(0, num_tiles_y):
             for i in range(0, num_tiles_x):
                 if selector(j, i):
-                    print("{}, {}".format(j, i))
-                    sample_file = self.tf_record_path +                        \
-                                  "{}_{}.tfrecords".format(j, i)
-                    windows_ds = self._annotate_ds(sample_file)
-                    if self.generate_labels:
-                        self._write_training_data(
-                                        self.tf_record_out_path +              \
-                                        dst_dir +                              \
-                                        "{}_{}.tfrecords".format(j, i),        \
-                                        windows_ds,                            \
-                                        window_betas)
+                    list_tiles.append((j, i))
 
-                    else: # self.generate_labels == False
-                        self._write_inference_data(
-                                        self.tf_record_out_path +              \
-                                        dst_dir +                              \
-                                        "{}_{}.tfrecords".format(j, i),        \
-                                        windows_ds)
+        write_ds = tf.data.Dataset.from_generator(lambda: list_tiles, tf.uint64)
+        write_ds = write_ds.map(lambda tile: tf.py_function(
+                                        write_data,
+                                        [tile],
+                                        [tf.uint64]),
+                                        num_parallel_calls=self.n_threads)
+
+        for item in write_ds:
+            pass # Just iterate to write the files
+
         return
