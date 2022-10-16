@@ -24,6 +24,9 @@ from datetime import datetime
 import sys
 sys.path.append('../lib/')
 import rsdtlib
+import multiprocessing
+
+n_threads = 10
 
 tf_record_path = "./tf_stack/"
 tf_record_out_path = "./tf_window/"
@@ -35,43 +38,86 @@ if not os.path.isdir(tf_record_out_path):
 window = rsdtlib.Window(
                   tf_record_path,
                   tf_record_out_path,
-                  60*60*24*30,  # Delta (size)
-                  60*60*24*2,   # delta (step)
-                  1,            # window shift
-                  10,           # omega (min. window size)
-                  32,           # tile size x
-                  32,           # tile size y
-                  13,           # bands opt
-                  2,            # bands SAR
-                  True,         # generate labels
-                  alpha = 0.25) # alpha
+                  60*60*24*30,           # Delta (size)
+                  60*60*24*2,            # delta (step)
+                  1,                     # window shift
+                  10,                    # omega (min. window size)
+                  32,                    # tile size x
+                  32,                    # tile size y
+                  13,                    # bands opt
+                  2,                     # bands SAR
+                  True,                  # generate labels
+                  alpha = 0.25,          # alpha
+                  n_threads = n_threads, # number of threads to use
+                  use_new_save = False)  # new TF Dataset save
 
-# Write the identified windows to a CSV files.
-window_list = window.windows_list()
-with open(tf_record_out_path + "windows_training.csv", mode = "w") as csv_file:
-    csv_writer = csv.writer(csv_file,
-                            delimiter=",",
-                            quotechar="\"",
-                            quoting=csv.QUOTE_MINIMAL)
-    for item in window_list:
-        csv_writer.writerow([item[0],
-                             datetime.utcfromtimestamp(item[1]),
-                             datetime.utcfromtimestamp(item[2]),
-                             item[3]])
+def write_it(args):
+    location = args[0]
+    tile = args[1]
+    betas_file = tf_record_out_path + "betas.npy"
+    if os.path.exists(betas_file):
+        window_betas = np.load(betas_file)
+    else:
+        assert False, "The betas file has to be present to continue!"
 
-# Create the beta values for each window (needed for synthetic labeling). Also
-# save them so they don't need to be recomputed.
-window_betas = window.preproc()
-np.save(tf_record_out_path + "betas.npy", window_betas)
+    window.write_tf_files(location,
+                          lambda j, i: (j==tile[0] and i==tile[1]),
+                          window_betas)
+    return
 
-# Write the final training samples (windows with labels). The lambda function
-# specifies the tiles to consider for training samples.
-window.write_tf_files("./train/",
-                      lambda j, i: (j + i/2) % 2 == 0,
-                      window_betas)
+if __name__ == '__main__':
+    # Write the identified windows to a CSV files.
+    window_list = window.windows_list()
+    with open(tf_record_out_path + "windows_training.csv",
+              mode = "w") as csv_file:
+        csv_writer = csv.writer(csv_file,
+                                delimiter=",",
+                                quotechar="\"",
+                                quoting=csv.QUOTE_MINIMAL)
+        for item in window_list:
+            csv_writer.writerow([item[0],
+                                 datetime.utcfromtimestamp(item[1]),
+                                 datetime.utcfromtimestamp(item[2]),
+                                 item[3]])
 
-# Write the final validation samples (windows with labels). The lambda function
-# specifies the tiles to consider for validation samples.
-window.write_tf_files("./val/",
-                      lambda j, i: (j + (i+1)/2 + 1) % 4 == 0,
-                      window_betas)
+    # Create the beta values for each window (needed for synthetic labeling).
+    # Also save them so they don't need to be recomputed.
+    betas_file = tf_record_out_path + "betas.npy"
+    if not os.path.exists(betas_file):
+        window_betas = window.preproc()
+        np.save(betas_file, window_betas)
+
+    # Write the final training samples (windows with labels). The  selector
+    # function specifies the tiles to consider for training samples.
+    list_tiles = []
+    selector = lambda j, i: (j + i/2) % 2 == 0
+    num_tiles_y, num_tiles_x = window.get_num_tiles()
+    for j in range(0, num_tiles_y):
+        for i in range(0, num_tiles_x):
+            if selector(j, i):
+                list_tiles.append(("./train/", (j, i)))
+
+    with multiprocessing.get_context("spawn").Pool(processes = n_threads) as p:
+        for i, _ in enumerate(p.imap_unordered(
+                                        write_it,
+                                        list_tiles)):
+            sys.stdout.write('\r  Progress: {0:.1%}'.format(i/len(list_tiles)))
+            sys.stdout.flush()
+    print('\n')
+
+    # Write the final validation samples (windows with labels). The selector
+    # function specifies the tiles to consider for validation samples.
+    list_tiles = []
+    selector = lambda j, i: (j + (i+1)/2 + 1) % 4 == 0
+    for j in range(0, num_tiles_y):
+        for i in range(0, num_tiles_x):
+            if selector(j, i):
+                list_tiles.append(("./val/", (j, i)))
+
+    with multiprocessing.get_context("spawn").Pool(processes = n_threads) as p:
+        for i, _ in enumerate(p.imap_unordered(
+                                        write_it,
+                                        list_tiles)):
+            sys.stdout.write('\r  Progress: {0:.1%}'.format(i/len(list_tiles)))
+            sys.stdout.flush()
+    print('\n')

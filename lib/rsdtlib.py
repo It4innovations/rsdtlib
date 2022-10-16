@@ -1133,7 +1133,7 @@ class Window:
         return window_list
 
 
-    def _get_num_tiles(self):
+    def get_num_tiles(self):
         import os
         import re
 
@@ -1297,7 +1297,7 @@ class Window:
         if not self.generate_labels:
             return None
 
-        num_tiles_y, num_tiles_x = self._get_num_tiles()
+        num_tiles_y, num_tiles_x = self.get_num_tiles()
 
         print("Computing beta coefficients for tiles (y, x):")
         list_tiles = []
@@ -1344,7 +1344,7 @@ class Window:
         import tensorflow as tf
 
         def write_data(tile):
-            print("{}, {}".format(tile[0], tile[1]))
+#            print("{}, {}".format(tile[0], tile[1]))
             sample_file = self.tf_record_path +                                \
                           "{}_{}.tfrecords".format(tile[0], tile[1])
             windows_ds = self._annotate_ds(sample_file)
@@ -1368,21 +1368,27 @@ class Window:
         if not os.path.isdir(self.tf_record_out_path + dst_dir):
             os.mkdir(self.tf_record_out_path + dst_dir)
 
-        num_tiles_y, num_tiles_x = self._get_num_tiles()
+        num_tiles_y, num_tiles_x = self.get_num_tiles()
 
-        print("Generating data ({}) for tiles (y, x):".format(dst_dir))
+#        print("Generating data ({}) for tiles (y, x):".format(dst_dir))
         list_tiles = []
         for j in range(0, num_tiles_y):
             for i in range(0, num_tiles_x):
                 if selector(j, i):
                     list_tiles.append((j, i))
 
-        write_ds = tf.data.Dataset.from_generator(lambda: list_tiles, tf.uint64)
+        write_ds = tf.data.Dataset.from_generator(lambda: list_tiles,
+                                                  output_signature=(
+                                                      tf.TensorSpec(
+                                                          shape=(2),
+                                                          dtype=tf.uint64)))
+        # Note: Multi-threading is done externally since writing TFRecord
+        #       files is not well parallelizable.
         write_ds = write_ds.map(lambda tile: tf.py_function(
                                         write_data,
                                         [tile],
                                         [tf.uint64]),
-                                        num_parallel_calls=self.n_threads)
+                                        num_parallel_calls=1)
 
         for item in write_ds:
             pass # Just iterate to write the files
