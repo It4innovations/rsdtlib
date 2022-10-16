@@ -1227,9 +1227,9 @@ class Window:
         def _get_sample(data):
             res = tf.concat(
                         # Only serialize current window (index 1)
-                        [data[1][1][:, :, :, :],  # SAR ascending
-                         data[1][2][:, :, :, :],  # SAR descending
-                         data[1][3][:, :, :, :]], # Optical
+                        [data[1][:, :, :, :],  # SAR ascending
+                         data[2][:, :, :, :],  # SAR descending
+                         data[3][:, :, :, :]], # Optical
                          axis=-1)
             return res
 
@@ -1365,8 +1365,14 @@ class Window:
             return 0
 
 
+        # Note: If multi-threaded by caller, this test might not work properly.
+        #       Hence, we ignore cases where the directory already exists!
         if not os.path.isdir(self.tf_record_out_path + dst_dir):
-            os.mkdir(self.tf_record_out_path + dst_dir)
+            try:
+                os.mkdir(self.tf_record_out_path + dst_dir)
+            except OSError as e:
+                if e.errno != errno.EEXIST:
+                    raise
 
         num_tiles_y, num_tiles_x = self.get_num_tiles()
 
