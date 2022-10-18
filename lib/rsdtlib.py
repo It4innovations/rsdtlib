@@ -1400,3 +1400,15 @@ class Window:
             pass # Just iterate to write the files
 
         return
+
+    def get_infer_dataset(self, tile):
+        import os
+        import datetime
+        import tensorflow as tf
+
+        sample_file = self.tf_record_path +                                    \
+                      "{}_{}.tfrecords".format(tile[0], tile[1])
+        if os.path.exists(sample_file):
+            return self._annotate_ds(sample_file)
+
+        return None
