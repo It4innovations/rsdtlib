@@ -1028,13 +1028,16 @@ class Window:
                                                         y[3][0:x])) # OPT
 
             prev_window_ds = tmp_dataset.concatenate(
-                input_ds.window(self.buffer_size, shift=1, stride=1)           \
+                input_ds.window(
+                            self.buffer_size,
+                            shift=self.window_shift,
+                            stride=1)                                          \
                     .flat_map(self._get_window))
 
             # Construct current and next windows
             cur_next_window_ds = input_ds.window(
                                     self.buffer_size*2,
-                                    shift=1,
+                                    shift=self.window_shift,
                                     stride=1)                                  \
                     .flat_map(self._get_window2)
 
@@ -1049,7 +1052,7 @@ class Window:
         else: # self.generate_labels == False
             cur_window_ds = input_ds.window(
                                     self.buffer_size,
-                                    shift=1,
+                                    shift=self.window_shift,
                                     stride=1)                                  \
                     .flat_map(self._get_window2)
             comb_dataset = cur_window_ds.apply(self._trunc_windows_no_labels)
