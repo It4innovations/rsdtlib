@@ -18,6 +18,7 @@ import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 import csv
 import time
+import math
 import datetime
 import numpy as np
 from datetime import datetime
@@ -39,9 +40,9 @@ window = rsdtlib.Window(
                   tf_record_path,
                   tf_record_out_path,
                   60*60*24*30,           # Delta (size)
-                  60*60*24*2,            # delta (step)
                   1,                     # window shift
                   10,                    # omega (min. window size)
+                  math.ceil(30/2) + 1    # Omega (max. window size)
                   32,                    # tile size x
                   32,                    # tile size y
                   13,                    # bands opt

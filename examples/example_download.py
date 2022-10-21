@@ -44,7 +44,7 @@ dst_s2 = "{}/S2".format(dst_path)
 # Note: This does not yet start the download!
 retrieve = rsdtlib.Retrieve(
                         startdate = isoparse('20170101T000000'),
-                        enddate = isoparse('20170630T235959'),
+                        enddate = isoparse('20170701T000000'),
                         aoi = my_aoi,
                         shconfig = shconfig)
 

@@ -42,6 +42,7 @@ stack = rsdtlib.Stack(
                 "dataMask",
                 tf_record_path,
                 datetime(2017, 1, 1, 0, 0, 0),
+                datetime(2017, 7, 1, 0, 0, 0),
                 60*60*24*2,   # delta (step)
                 32,           # tile size x
                 32,           # tile size y

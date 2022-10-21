@@ -378,6 +378,7 @@ class Stack:
                  opt_mask_name,
                  tf_record_path,
                  startdate,
+                 enddate,
                  delta_step,
                  tile_size_x,
                  tile_size_y,
@@ -392,6 +393,7 @@ class Stack:
         self.opt_mask_name = opt_mask_name
         self.tf_record_path = tf_record_path
         self.startdate = startdate
+        self.enddate = enddate
         self.delta_step = delta_step
         self.tile_size_x = tile_size_x
         self.tile_size_y = tile_size_y
@@ -471,33 +473,35 @@ class Stack:
         return min_height_OPT, min_width_OPT, min_height_SAR, min_width_SAR
 
 
-    def _get_window_list(self, list_time_stamps):
+    def _get_steps_list(self, list_time_stamps):
         from datetime import timedelta
 
         # Run through once to identify where to set the steps
         start_cur_window = self.startdate
         prev_ts = None
         eff_windows = 0
-        window_list = []
+        steps_list = []
         for ts in list_time_stamps:
             if ts[0] < start_cur_window: # only for the beginning
                 continue
+            if ts[0] >= self.enddate: # only for past the end date
+                break
             if ts[0] - start_cur_window >= timedelta(seconds=self.delta_step):
                 eff_windows += 1
                 off_by = (ts[0] - start_cur_window)//timedelta(
                                                         seconds=self.delta_step)
                 start_cur_window += off_by * timedelta(seconds=self.delta_step)
                 if prev_ts != None: # only for the beginning
-                    window_list.append(prev_ts)
+                    steps_list.append(prev_ts)
             prev_ts = ts[0]
-        if prev_ts != None and not prev_ts in window_list:
+        if prev_ts != None and not prev_ts in steps_list:
             eff_windows += 1
-            window_list.append(prev_ts)
+            steps_list.append(prev_ts)
 
         print("Effective time stamps " +
               "(from 'startdate' with 'delta_step' steps): {}".format(
                                                                 eff_windows))
-        return window_list
+        return steps_list
 
 
     def _tile_stream(self,
@@ -529,7 +533,7 @@ class Stack:
                                       min_height_SAR, min_width_SAR,
                                       num_tiles_x, num_tiles_y,
                                       list_time_stamps,
-                                      window_list,
+                                      steps_list,
                                       tfr_tile_files):
         import numpy as np
         import tensorflow as tf
@@ -636,7 +640,7 @@ class Stack:
                     assert False, "Unknown type"
             print(timestep[0])
             # Only write end of time_step
-            if timestep[0] not in window_list:
+            if timestep[0] not in steps_list:
                 continue
 
             # Try to only compute what's really changed to speed up processing
@@ -738,7 +742,7 @@ class Stack:
 
         print("Total time stamps: {}".format(len(list_time_stamps)))
 
-        window_list = self._get_window_list(list_time_stamps)
+        steps_list = self._get_steps_list(list_time_stamps)
 
         num_tiles_y = min_height_SAR//self.tile_size_y
         num_tiles_x = min_width_SAR//self.tile_size_x
@@ -759,7 +763,7 @@ class Stack:
                              min_height_SAR, min_width_SAR,
                              num_tiles_x, num_tiles_y,
                              list_time_stamps,
-                             window_list,
+                             steps_list,
                              tfr_tile_files)
 
         # Close all TFRecords
@@ -773,9 +777,9 @@ class Window:
                  tf_record_path,
                  tf_record_out_path,
                  delta_size,
-                 delta_step,
                  window_shift,
                  omega,
+                 Omega,
                  tile_size_x,
                  tile_size_y,
                  bands_opt,
@@ -789,12 +793,11 @@ class Window:
         self.tf_record_path = tf_record_path
         self.tf_record_out_path = tf_record_out_path
         self.delta_size = delta_size
-        self.delta_step = delta_step
         self.tile_size_x = tile_size_x
         self.tile_size_y = tile_size_y
         self.window_shift = window_shift
         self.omega = omega
-        self.buffer_size = math.ceil(delta_size/delta_step) + 1
+        self.Omega = Omega
         self.bands_opt = bands_opt
         self.bands_sar = bands_sar
         self.generate_labels = generate_labels
@@ -851,19 +854,19 @@ class Window:
         def first_only(batch):
             return tf.broadcast_to(batch[0], [tf.size(batch)])
 
-        ref = timestamp.batch(self.buffer_size).map(first_only)
+        ref = timestamp.batch(self.Omega).map(first_only)
 
         sub = tf.data.Dataset.zip((timestamp,
                                    sar_ascending,
                                    sar_descending,
                                    opt))
-        batch = sub.batch(self.buffer_size)
+        batch = sub.batch(self.Omega)
         selection = tf.data.Dataset.zip((batch, ref))
         windows = selection.unbatch()                                          \
                            .filter(lambda x, y:                                \
                                    tf.math.less(x[0], y + self.delta_size))    \
                            .map(lambda x, y: x)                                \
-                           .batch(self.buffer_size)
+                           .batch(self.Omega)
 
         return windows
 
@@ -875,7 +878,7 @@ class Window:
                                    sar_ascending,
                                    sar_descending,
                                    opt))
-        batch = sub.batch(self.buffer_size)
+        batch = sub.batch(self.Omega)
         return batch
 
 
@@ -886,7 +889,7 @@ class Window:
                                    sar_ascending,
                                    sar_descending,
                                    opt))
-        batch = sub.batch(self.buffer_size*2)
+        batch = sub.batch(self.Omega*2)
         return batch
 
 
@@ -1012,16 +1015,16 @@ class Window:
                         .map(self._parse_tfr_element, num_parallel_calls=1)
 
         if self.generate_labels:
-            # Construct previous window (starting from [] up to [buffer_size]
+            # Construct previous window (starting from [] up to [Omega]
             dataset_enum = tf.data.Dataset.from_tensor_slices(
                                                 tf.range(
                                                     0,
-                                                    self.buffer_size,
+                                                    self.Omega,
                                                     dtype=tf.int64))
             tmp_dataset = tf.data.Dataset.zip(
                 (dataset_enum,
-                 input_ds.take(self.buffer_size)                               \
-                    .batch(self.buffer_size).repeat(self.buffer_size)))
+                 input_ds.take(self.Omega)                               \
+                    .batch(self.Omega).repeat(self.Omega)))
             tmp_dataset = tmp_dataset.map(lambda x, y: (y[0][0:x],  # Timestamp
                                                         y[1][0:x],  # SAR asc.
                                                         y[2][0:x],  # SAR dsc.
@@ -1029,14 +1032,14 @@ class Window:
 
             prev_window_ds = tmp_dataset.concatenate(
                 input_ds.window(
-                            self.buffer_size,
+                            self.Omega,
                             shift=self.window_shift,
                             stride=1)                                          \
                     .flat_map(self._get_window))
 
             # Construct current and next windows
             cur_next_window_ds = input_ds.window(
-                                    self.buffer_size*2,
+                                    self.Omega*2,
                                     shift=self.window_shift,
                                     stride=1)                                  \
                     .flat_map(self._get_window2)
@@ -1051,7 +1054,7 @@ class Window:
 
         else: # self.generate_labels == False
             cur_window_ds = input_ds.window(
-                                    self.buffer_size,
+                                    self.Omega,
                                     shift=self.window_shift,
                                     stride=1)                                  \
                     .flat_map(self._get_window2)
@@ -1120,7 +1123,7 @@ class Window:
                     print("EMPTY")
 
         this_id = 0
-        window_list = []
+        windows_list = []
         for item in get_windows_ds:
             if self.generate_labels:
                 this_item = item[1]
@@ -1128,12 +1131,12 @@ class Window:
                 this_item = item[0]
 
             window_amount = len(this_item[0].numpy())
-            window_list.append((this_id,
+            windows_list.append((this_id,
                                 int(this_item[0][0].numpy()),
                                 int(this_item[0][-1].numpy()),
                                 window_amount))
             this_id += 1
-        return window_list
+        return windows_list
 
 
     def get_num_tiles(self):
