@@ -42,7 +42,7 @@ window = rsdtlib.Window(
                   60*60*24*30,           # Delta (size)
                   1,                     # window shift
                   10,                    # omega (min. window size)
-                  math.ceil(30/2) + 1    # Omega (max. window size)
+                  math.ceil(30/2) + 1,   # Omega (max. window size)
                   32,                    # tile size x
                   32,                    # tile size y
                   13,                    # bands opt
