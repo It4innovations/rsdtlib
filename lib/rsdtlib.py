@@ -16,9 +16,9 @@
 #
 
 class Retrieve:
-    def __init__(self, startdate, enddate, aoi, shconfig):
-        self.startdate = startdate
-        self.enddate = enddate
+    def __init__(self, starttime, endtime, aoi, shconfig):
+        self.starttime = starttime
+        self.endtime = endtime
         self.aoi = aoi
         self.shconfig = shconfig
 
@@ -29,15 +29,15 @@ class Retrieve:
         """
         from dateutil.relativedelta import relativedelta
         interval_list = []
-        this_date = self.startdate
-        while this_date < self.enddate:
-            this_enddate = this_date + relativedelta(months=+1, seconds=-1)
-            if this_enddate > self.enddate:
-                this_enddate = self.enddate
+        this_time = self.starttime
+        while this_time < self.endtime:
+            this_endtime = this_time + relativedelta(months=+1, seconds=-1)
+            if this_endtime > self.endtime:
+                this_endtime= self.endtime
 
-            interval_list.append((this_date.isoformat(),
-                                  this_enddate.isoformat()))
-            this_date += relativedelta(months=+1)
+            interval_list.append((this_time.isoformat(),
+                                  this_endtime.isoformat()))
+            this_time += relativedelta(months=+1)
         return interval_list
 
 
@@ -216,7 +216,7 @@ class Retrieve:
         if not os.path.isdir(eopatches_fail_dir):
             os.mkdir(eopatches_fail_dir)
 
-        time_interval = (self.startdate.isoformat(), self.enddate.isoformat())
+        time_interval = (self.starttime.isoformat(), self.endtime.isoformat())
         this_bbox = self._get_bbox()
 
         # Get number of samples to download...
@@ -283,11 +283,11 @@ class Retrieve:
         for i in all_samples:
             start_d = i - datetime.timedelta(0,1)
             end_d = i + datetime.timedelta(0,1)
-            this_date_str = i.strftime("%Y%m%dT%H%M%S")
+            this_time_str = i.strftime("%Y%m%dT%H%M%S")
             if (os.path.isdir("{}/{}".format(eopatches_out_dir,
-                                            this_date_str)) or
+                                            this_time_str)) or
                 os.path.isdir("{}/{}".format(eopatches_fail_dir,
-                                            this_date_str))):
+                                            this_time_str))):
                     continue
 
             download_result = downloader.execute({
@@ -296,7 +296,7 @@ class Retrieve:
                     "time_interval": (start_d, end_d)
                 },
                 workflow_nodes[1]: {
-                    "eopatch_folder": this_date_str
+                    "eopatch_folder": this_time_str
                 }
             })
             num_down += 1
@@ -325,11 +325,11 @@ class Retrieve:
             for i in all_samples:
                 start_d = i - datetime.timedelta(0,1)
                 end_d = i + datetime.timedelta(0,1)
-                this_date_str = i.strftime("%Y%m%dT%H%M%S")
+                this_time_str = i.strftime("%Y%m%dT%H%M%S")
                 if (os.path.isdir("{}/{}".format(eopatches_out_dir,
-                                                this_date_str)) or
+                                                this_time_str)) or
                     os.path.isdir("{}/{}".format(eopatches_fail_dir,
-                                                this_date_str))):
+                                                this_time_str))):
                     continue
 
                 download_result = downloader.execute({
@@ -338,7 +338,7 @@ class Retrieve:
                         "time_interval": (start_d, end_d)
                     },
                     workflow_nodes[1]: {
-                        "eopatch_folder": this_date_str
+                        "eopatch_folder": this_time_str
                     }
                 })
 
@@ -377,8 +377,8 @@ class Stack:
                  opt_bands_name,
                  opt_mask_name,
                  tf_record_path,
-                 startdate,
-                 enddate,
+                 starttime,
+                 endtime,
                  delta_step,
                  tile_size_x,
                  tile_size_y,
@@ -392,8 +392,8 @@ class Stack:
         self.opt_bands_name = opt_bands_name
         self.opt_mask_name = opt_mask_name
         self.tf_record_path = tf_record_path
-        self.startdate = startdate
-        self.enddate = enddate
+        self.starttime = starttime
+        self.endtime = endtime
         self.delta_step = delta_step
         self.tile_size_x = tile_size_x
         self.tile_size_y = tile_size_y
@@ -477,14 +477,14 @@ class Stack:
         from datetime import timedelta
 
         # Run through once to identify where to set the steps
-        start_cur_window = self.startdate
+        start_cur_window = self.starttime
         prev_ts = None
         eff_windows = 0
         steps_list = []
         for ts in list_time_stamps:
             if ts[0] < start_cur_window: # only for the beginning
                 continue
-            if ts[0] >= self.enddate: # only for past the end date
+            if ts[0] >= self.endtime: # only for past the end date
                 break
             if ts[0] - start_cur_window >= timedelta(seconds=self.delta_step):
                 eff_windows += 1
@@ -499,7 +499,7 @@ class Stack:
             steps_list.append(prev_ts)
 
         print("Effective time stamps " +
-              "(from 'startdate' with 'delta_step' steps): {}".format(
+              "(from 'starttime' with 'delta_step' steps): {}".format(
                                                                 eff_windows))
         return steps_list
 

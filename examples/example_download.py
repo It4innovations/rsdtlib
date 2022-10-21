@@ -43,8 +43,8 @@ dst_s2 = "{}/S2".format(dst_path)
 # Retrieve the observations within the given period
 # Note: This does not yet start the download!
 retrieve = rsdtlib.Retrieve(
-                        startdate = isoparse('20170101T000000'),
-                        enddate = isoparse('20170701T000000'),
+                        starttime = isoparse('20170101T000000'),
+                        endtime = isoparse('20170701T000000'),
                         aoi = my_aoi,
                         shconfig = shconfig)
 
