@@ -6,7 +6,7 @@ This project provides a Python module that allows:
 3. Create windows of longer time series comprising these observations (i.e. deep-temporal)
 
 <p align="center">
-  <img src="./mages/rsdtlib_pipeline.png" />
+  <img src="./images/rsdtlib_pipeline.png" />
 </p>
 
 # Contact
