@@ -5,6 +5,9 @@ This project provides a Python module that allows:
 2. Temporally stack, assemble and tile these observations
 3. Create windows of longer time series comprising these observations (i.e. deep-temporal)
 
+<p align="center">
+  <img src="./mages/rsdtlib_pipeline.png" />
+</p>
 
 # Contact
 Should you have any feedback or questions, please contact the main author: Georg Zitzlsberger (georg.zitzlsberger(a)vsb.cz).
