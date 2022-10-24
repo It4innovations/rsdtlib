@@ -178,6 +178,7 @@ class Retrieve:
 
     def get_images(self, datacollection, dst_path, maxcc=1.0):
         import os
+        import sys
         import shutil
         import datetime
         from sentinelhub import DataCollection
@@ -300,6 +301,10 @@ class Retrieve:
                 }
             })
             num_down += 1
+            sys.stdout.write('\r  Data progress: {0:.1%}'.format(
+                                                     num_down/len(all_samples)))
+            sys.stdout.flush()
+        print("\n")
 
         # For optical data, download also cloud masks and merge. If that fails,
         # move to failed directory.
@@ -322,6 +327,7 @@ class Retrieve:
             workflow_nodes = linearly_connect_tasks(get_clm_task, save_task)
             downloader = EOWorkflow(workflow_nodes)
 
+            num_down = 0
             for i in all_samples:
                 start_d = i - datetime.timedelta(0,1)
                 end_d = i + datetime.timedelta(0,1)
@@ -341,6 +347,11 @@ class Retrieve:
                         "eopatch_folder": this_time_str
                     }
                 })
+                num_down += 1
+                sys.stdout.write('\r  CLM progress: {0:.1%}'.format(
+                                                     num_down/len(all_samples)))
+                sys.stdout.flush()
+            print("\n")
 
             self._merge_CLM(eopatches_tmp_dir,
                             eopatches_clm_dir,
@@ -784,7 +795,7 @@ class Window:
                  tile_size_y,
                  bands_opt,
                  bands_sar,
-                 generate_labels,
+                 generate_triple,
                  alpha = None,
                  n_threads = 1,
                  use_new_save = False):
@@ -800,7 +811,7 @@ class Window:
         self.Omega = Omega
         self.bands_opt = bands_opt
         self.bands_sar = bands_sar
-        self.generate_labels = generate_labels
+        self.generate_triple = generate_triple
         self.alpha = alpha
         self.n_threads = n_threads
         self.use_new_save = use_new_save
@@ -893,7 +904,7 @@ class Window:
         return batch
 
 
-    def _trunc_windows_for_labels(self, tpls):
+    def _trunc_windows_for_triple(self, tpls):
         import tensorflow as tf
 
         @tf.function
@@ -956,7 +967,7 @@ class Window:
         return tf.data.Dataset.zip((prev_win, cur_win, next_win))
 
 
-    def _trunc_windows_no_labels(self, cur):
+    def _trunc_windows_for_mono(self, cur):
         import tensorflow as tf
 
         @tf.function
@@ -988,7 +999,7 @@ class Window:
         import tensorflow as tf
 
         # Workaraound to get rid of warning reg. AUTOGRAPH
-        filter_obs_for_labels = tf.autograph.experimental.do_not_convert(
+        filter_obs_for_triple = tf.autograph.experimental.do_not_convert(
                             lambda prev_win, cur_win, next_win:                \
                             tf.math.logical_and(                               \
                                 tf.math.logical_and(                           \
@@ -996,7 +1007,7 @@ class Window:
                                     tf.shape(cur_win[0])[0] >= self.omega),    \
                                     tf.shape(next_win[0])[0] >= self.omega))
 
-        filter_obs_no_labels = tf.autograph.experimental.do_not_convert(
+        filter_obs_for_mono = tf.autograph.experimental.do_not_convert(
                             lambda cur_win:                                    \
                             tf.shape(cur_win[0])[0] >= self.omega)
 
@@ -1014,7 +1025,7 @@ class Window:
                                          num_parallel_reads=1)                 \
                         .map(self._parse_tfr_element, num_parallel_calls=1)
 
-        if self.generate_labels:
+        if self.generate_triple:
             # Construct previous window (starting from [] up to [Omega]
             dataset_enum = tf.data.Dataset.from_tensor_slices(
                                                 tf.range(
@@ -1047,21 +1058,21 @@ class Window:
             # Concatenate both together and filter for timeframes of delta_size
             comb_dataset = tf.data.Dataset.zip((prev_window_ds,
                                                 cur_next_window_ds))
-            comb_dataset = comb_dataset.apply(self._trunc_windows_for_labels)
+            comb_dataset = comb_dataset.apply(self._trunc_windows_for_triple)
 
             # Return only windows that have at least omega observations
-            res_dataset = comb_dataset.filter(filter_obs_for_labels)
+            res_dataset = comb_dataset.filter(filter_obs_for_triple)
 
-        else: # self.generate_labels == False
+        else: # self.generate_triple == False
             cur_window_ds = input_ds.window(
                                     self.Omega,
                                     shift=self.window_shift,
                                     stride=1)                                  \
                     .flat_map(self._get_window2)
-            comb_dataset = cur_window_ds.apply(self._trunc_windows_no_labels)
+            comb_dataset = cur_window_ds.apply(self._trunc_windows_for_mono)
 
             # Return only windows that have at least omega observations
-            res_dataset = comb_dataset.filter(filter_obs_no_labels)
+            res_dataset = comb_dataset.filter(filter_obs_for_mono)
 
         return res_dataset
 
@@ -1077,7 +1088,7 @@ class Window:
                       "{}_{}.tfrecords".format(j, i)
         get_windows_ds = self._annotate_ds(sample_file)
 
-        if self.generate_labels:
+        if self.generate_triple:
             print("List of window ranges (previous, current, next):")
             for item in get_windows_ds:
                 if tf.shape(item[0][0]) > 0:
@@ -1109,7 +1120,7 @@ class Window:
                     print("\t\tEMPTY")
                 print()
 
-        else: # self.generate_labels == False
+        else: # self.generate_triple == False
             print("List of window ranges (current):")
             for item in get_windows_ds:
                 if tf.shape(item[0][0]) > 0:
@@ -1125,9 +1136,9 @@ class Window:
         this_id = 0
         windows_list = []
         for item in get_windows_ds:
-            if self.generate_labels:
+            if self.generate_triple:
                 this_item = item[1]
-            else: # self.generate_labels == False
+            else: # self.generate_triple == False
                 this_item = item[0]
 
             window_amount = len(this_item[0].numpy())
@@ -1163,31 +1174,16 @@ class Window:
         return num_tiles_y, num_tiles_x
 
 
-    def _write_training_data(self, tf_record_out_file, dataset, window_betas):
+    def _write_training_data(self,
+                             tf_record_out_file,
+                             dataset,
+                             label_args_ds,
+                             gen_label):
         import tensorflow as tf
         import sys
         sys.path.append('../label/')
         from label import Synthetic_Label
 
-        def _get_sample_label(data, betas):
-            res = (tf.concat(
-                        # Only serialize current window (index 1)
-                        [data[1][1][:, :, :, :],  # SAR ascending
-                         data[1][2][:, :, :, :],  # SAR descending
-                         data[1][3][:, :, :, :]], # Optical
-                         axis=-1),
-                   tf.ensure_shape(tf.numpy_function(
-                        Synthetic_Label.compute_label_S2_S1_ENDISI,
-                        [data[1][1][:, :, :, :], # SAR ascending
-                         data[1][2][:, :, :, :], # SAR descending
-                         data[1][3][:, :, :, :], # Optical
-                         data[0][3][:, :, :, :], # Optical (prev)
-                         data[2][3][:, :, :, :], # Optical (next)
-                         self.alpha,
-                         betas[0],
-                         betas[1]], tf.float32),
-                        [self.tile_size_y, self.tile_size_x]))
-            return res
 
         def _bytes_feature(value):
             if isinstance(value, type(tf.constant(0))):
@@ -1195,12 +1191,12 @@ class Window:
             return tf.train.Feature(
                         bytes_list=tf.train.BytesList(value=[value]))
 
-        betas_ds = tf.data.Dataset.from_tensor_slices(window_betas)
-        comb_ds = tf.data.Dataset.zip((dataset, betas_ds))
-        comb_ds = comb_ds.map(_get_sample_label)
+
+        comb_ds = tf.data.Dataset.zip((dataset, label_args_ds))
+        comb_ds = comb_ds.map(gen_label)
         if self.use_new_save:
-#            tf.data.Dataset.save(comb_ds, tf_record_out_file, "GZIP")
-            tf.data.experimental.save(comb_ds, tf_record_out_file, "GZIP")
+            tf.data.Dataset.save(comb_ds, tf_record_out_file, "GZIP")
+#            tf.data.experimental.save(comb_ds, tf_record_out_file, "GZIP")
 
         else: # self.use_new_save == False
             tfr_options = tf.io.TFRecordOptions(compression_type="GZIP")
@@ -1227,8 +1223,6 @@ class Window:
     def _write_inference_data(self, tf_record_out_file, dataset):
         import tensorflow as tf
         import sys
-        sys.path.append('../label/')
-        from label import Synthetic_Label
 
         def _get_sample(data):
             res = tf.concat(
@@ -1239,16 +1233,18 @@ class Window:
                          axis=-1)
             return res
 
+
         def _bytes_feature(value):
             if isinstance(value, type(tf.constant(0))):
                 value = value.numpy()
             return tf.train.Feature(
                         bytes_list=tf.train.BytesList(value=[value]))
 
+
         comb_ds = dataset.map(_get_sample)
         if self.use_new_save:
-#            tf.data.Dataset.save(comb_ds, tf_record_out_file, "GZIP")
-            tf.data.experimental.save(comb_ds, tf_record_out_file, "GZIP")
+            tf.data.Dataset.save(comb_ds, tf_record_out_file, "GZIP")
+#            tf.data.experimental.save(comb_ds, tf_record_out_file, "GZIP")
 
         else: # self.use_new_save == False
             tfr_options = tf.io.TFRecordOptions(compression_type="GZIP")
@@ -1270,99 +1266,34 @@ class Window:
             this_tfr.close()
 
 
-    def preproc(self):
-        import numpy as np
-        import sys
-        import tensorflow as tf
-        sys.path.append('../label/')
-        from label import Synthetic_Label
-
-        def generate_beta_coeffs(stack, prev_win, next_win):
-            import tensorflow as tf
-
-            return tf.ensure_shape(tf.numpy_function(
-                        Synthetic_Label.compute_label_S2_S1_ENDISI_beta_coeefs,
-                        [prev_win[3], next_win[3]], tf.float32),
-                        [2, 3])
-
-        # Helper for parallel execution...
-        def get_coeffs(tile):
-            print("{}, {}".format(tile[0], tile[1]))
-            sample_file = self.tf_record_path +                                \
-                          "{}_{}.tfrecords".format(tile[0], tile[1])
-            windows_ds = self._annotate_ds(sample_file)
-            coeffs_ds = windows_ds.map(generate_beta_coeffs,
-                                       num_parallel_calls=1)
-
-            res = []
-            for coeff in coeffs_ds:
-                res.append(coeff)
-            return np.array(res)
-
-
-        if not self.generate_labels:
-            return None
-
-        num_tiles_y, num_tiles_x = self.get_num_tiles()
-
-        print("Computing beta coefficients for tiles (y, x):")
-        list_tiles = []
-        for j in range(0, num_tiles_y):
-            for i in range(0, num_tiles_x):
-                list_tiles.append((j, i))
-
-        co_ds = tf.data.Dataset.from_generator(lambda: list_tiles, tf.uint64)
-        co_ds = co_ds.map(lambda tile: tf.py_function(
-                                        get_coeffs,
-                                        [tile],
-                                        [tf.float32]),
-                                        num_parallel_calls=self.n_threads)
-
-        # Attention: Order of tiles is not guaranteed due to parallelism!
-        all_coeffs = []
-        for item in co_ds:
-            all_coeffs.append(item[0])
-
-        # Layout of all_coeffs:
-        # [num_tiles_y*num_tiles_x][win#][2][3]
-        # - 1st: tiles in flat sequence
-        # - 2nd: window number
-        # - 3rd: prev_win/next_win
-        # - 4th: three coefficients
-        all_coeffs = np.array(all_coeffs)
-
-        # Merge all coefficients to buld final beta values for every window
-        # Note: A beta value is across all tiles!
-        print("Computing beta values for windows:")
-        window_betas_tmp = []
-        for window_no in range(0, all_coeffs.shape[1]):
-            print(window_no)
-            beta1 = Synthetic_Label.compute_label_S2_S1_ENDISI_comp_betas(
-                                              all_coeffs[:, window_no, 0, :])
-            beta2 = Synthetic_Label.compute_label_S2_S1_ENDISI_comp_betas(
-                                              all_coeffs[:, window_no, 1, :])
-            window_betas_tmp.append((beta1, beta2))
-        return np.array(window_betas_tmp)
-
-    def write_tf_files(self, dst_dir, selector, window_betas = None):
+    def write_tf_files(self,
+                       dst_dir,
+                       selector,
+                       win_filter = None,
+                       label_args_ds = None,
+                       gen_label = None):
         import os
         import datetime
         import tensorflow as tf
 
-        def write_data(tile):
-#            print("{}, {}".format(tile[0], tile[1]))
+        def write_data(tile, win_filter, label_args_ds, gen_label):
             sample_file = self.tf_record_path +                                \
                           "{}_{}.tfrecords".format(tile[0], tile[1])
             windows_ds = self._annotate_ds(sample_file)
-            if self.generate_labels:
+
+            if win_filter is not None:
+                windows_ds = windows_ds.filter(win_filter)
+
+            if label_args_ds is not None:
                 self._write_training_data(
                                 self.tf_record_out_path +                      \
                                 dst_dir +                                      \
                                 "{}_{}.tfrecords".format(tile[0], tile[1]),    \
                                 windows_ds,                                    \
-                                window_betas)
+                                label_args_ds,                                 \
+                                gen_label)
 
-            else: # self.generate_labels == False
+            else: # label_args_ds is None
                 self._write_inference_data(
                                 self.tf_record_out_path +                      \
                                 dst_dir +                                      \
@@ -1382,32 +1313,35 @@ class Window:
 
         num_tiles_y, num_tiles_x = self.get_num_tiles()
 
-#        print("Generating data ({}) for tiles (y, x):".format(dst_dir))
         list_tiles = []
         for j in range(0, num_tiles_y):
             for i in range(0, num_tiles_x):
                 if selector(j, i):
                     list_tiles.append((j, i))
 
-        write_ds = tf.data.Dataset.from_generator(lambda: list_tiles,
-                                                  output_signature=(
-                                                      tf.TensorSpec(
-                                                          shape=(2),
-                                                          dtype=tf.uint64)))
-        # Note: Multi-threading is done externally since writing TFRecord
-        #       files is not well parallelizable.
-        write_ds = write_ds.map(lambda tile: tf.py_function(
-                                        write_data,
-                                        [tile],
-                                        [tf.uint64]),
-                                        num_parallel_calls=1)
-
-        for item in write_ds:
-            pass # Just iterate to write the files
+# FIXME: How to pass all new arguments?
+#        write_ds = tf.data.Dataset.from_generator(lambda: list_tiles,
+#                                                  output_signature=(
+#                                                      tf.TensorSpec(
+#                                                          shape=(2),
+#                                                          dtype=tf.uint64)))
+#        # Note: Multi-threading is done externally since writing TFRecord
+#        #       files is not well parallelizable.
+#        write_ds = write_ds.map(lambda tile: tf.py_function(
+#                                        write_data,
+#                                        [tile],
+#                                        [tf.uint64]),
+#                                        num_parallel_calls=1)
+#
+#        for item in write_ds:
+#            pass # Just iterate to write the files
+        for item in list_tiles:
+            write_data(item, win_filter, label_args_ds, gen_label)
 
         return
 
-    def get_infer_dataset(self, tile):
+
+    def get_infer_dataset(self, tile, win_filter = None):
         import os
         import datetime
         import tensorflow as tf
@@ -1415,6 +1349,11 @@ class Window:
         sample_file = self.tf_record_path +                                    \
                       "{}_{}.tfrecords".format(tile[0], tile[1])
         if os.path.exists(sample_file):
-            return self._annotate_ds(sample_file)
+            windows_ds = self._annotate_ds(sample_file)
+
+            if win_filter is not None:
+                windows_ds = windows_ds.filter(win_filter)
+
+            return windows_ds
 
         return None
