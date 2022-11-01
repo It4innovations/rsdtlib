@@ -51,11 +51,10 @@ class Retrieve:
         from sentinelhub import geometry
 
         shp_data = gpd.read_file(self.aoi)
-        shp_data.crs = "EPSG:4326"
+        crs = shp_data.crs.to_epsg()
 
-        WGS84_data = shp_data.to_crs("EPSG:4326")
-        for index, row in WGS84_data.iterrows():
-            return geometry.Geometry(row["geometry"], crs="EPSG:4326").bbox
+        for item, row in shp_data.iterrows():
+            return geometry.Geometry(row['geometry'], crs=crs).bbox
 
 
     def _merge_CLM(self,
@@ -369,6 +368,82 @@ class Retrieve:
             assert False, "Unkown or unsupported DataCollection"
 
         return num_down
+
+
+class Convert:
+    def __init__(self,
+                 dst_path,
+                 aoi):
+        self.dst_path = dst_path
+        self.aoi = aoi
+
+    def process(self, root_path, bands_tiff, mask_tiff, timestamp):
+        import numpy as np
+        import eolearn.io
+        import geopandas as gpd
+        from sentinelhub import geometry
+        from datetime import datetime
+        from eolearn.core import FeatureType, EOTask, EOPatch
+        from eolearn.core import EONode, EOWorkflow, EOExecutor
+        from sentinelhub import BBox, CRS
+
+        class EOPatchConvert(EOTask):
+            def __init__(self,
+                         root_path,
+                         bands_tiff,
+                         mask_tiff,
+                         timestamp,
+                         bbox):
+                self.root_path = root_path
+                self.bands_tiff = bands_tiff
+                self.mask_tiff = mask_tiff
+                self.timestamp = timestamp
+                self.bbox = bbox
+
+            def execute(self):
+                execution_args = {}
+
+                importer_task = eolearn.io.local_io.ImportFromTiffTask(
+                                        (FeatureType.DATA, "Bands"),
+                                        image_dtype = np.float32,
+                                        folder = self.root_path)
+                importer_mask_task = eolearn.io.local_io.ImportFromTiffTask(
+                                        (FeatureType.MASK, "Mask"),
+                                        image_dtype = np.uint16,
+                                        folder = self.root_path)
+
+                this_patch = EOPatch(bbox = self.bbox)
+                this_patch = importer_task.execute(this_patch,
+                                                   filename=self.bands_tiff)
+                this_patch = importer_mask_task.execute(this_patch,
+                                                        filename=self.mask_tiff)
+
+                # Normalize 'Bands'
+                bands_mod = this_patch.data["Bands"]
+                bands_mod = bands_mod[:,:,:,:] / 255
+                this_patch.data["Bands"] = bands_mod
+
+                new_datetime = datetime.strptime(self.timestamp,
+                                                 "%Y%m%dT%H%M%S")
+                this_patch.timestamp = [new_datetime]
+                return this_patch
+
+        shp_data = gpd.read_file(self.aoi)
+        crs = shp_data.crs.to_epsg()
+
+        this_bbox = {}
+        for item, row in shp_data.iterrows():
+            this_bbox = geometry.Geometry(row['geometry'], crs=crs).bbox
+            break # Just use first entry
+
+        convert = EOPatchConvert(root_path = root_path,
+                                    bands_tiff = bands_tiff,
+                                    mask_tiff = mask_tiff,
+                                    timestamp = timestamp,
+                                    bbox = this_bbox)
+        result = convert.execute()
+        result.save(self.dst_path + "/{}".format(timestamp))
+        return result
 
 
 from enum import Enum
