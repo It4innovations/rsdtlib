@@ -32,10 +32,8 @@ shconfig.sh_client_secret = "<YOUR CLIENT SECRET>"
 # Just a small area in Ostrava/CZ
 my_aoi = "./ostrava.shp"
 
-# Locations where to store the observations
+# Locations where to store the EOPatches
 dst_path = "./obs"
-if not os.path.isdir(dst_path):
-    os.mkdir(dst_path)
 dst_s1_asc = "{}/S1_asc".format(dst_path)
 dst_s1_dsc = "{}/S1_dsc".format(dst_path)
 dst_s2 = "{}/S2".format(dst_path)
@@ -50,21 +48,21 @@ retrieve = rsdtlib.Retrieve(
 
 # Start download for Sentinel 1 ascending orbit direction (SAR)
 if not os.path.isdir(dst_s1_asc):
-    os.mkdir(dst_s1_asc)
+    os.makedirs(dst_s1_asc, exist_ok=True)
 num_down = retrieve.get_images(datacollection=DataCollection.SENTINEL1_IW_ASC,
                                dst_path=dst_s1_asc)
 print("Downloaded to {}: {}".format(dst_s1_asc, num_down))
 
 # Start download for Sentinel 1 descending orbit direction (SAR)
 if not os.path.isdir(dst_s1_dsc):
-    os.mkdir(dst_s1_dsc)
+    os.makedirs(dst_s1_dsc, exist_ok=True)
 num_down = retrieve.get_images(datacollection=DataCollection.SENTINEL1_IW_DES,
                                dst_path=dst_s1_dsc)
 print("Downloaded to {}: {}".format(dst_s1_dsc, num_down))
 
 # Start download for Sentinel 2 (optical)
 if not os.path.isdir(dst_s2):
-    os.mkdir(dst_s2)
+    os.makedirs(dst_s2, exist_ok=True)
 num_down = retrieve.get_images(datacollection=DataCollection.SENTINEL2_L1C,
                                dst_path=dst_s2)
 print("Downloaded to {}: {}".format(dst_s2, num_down))
