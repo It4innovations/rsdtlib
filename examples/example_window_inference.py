@@ -15,7 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 import os
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 import csv
 import time
 import math
@@ -23,11 +23,11 @@ import datetime
 import numpy as np
 from datetime import datetime
 import sys
-sys.path.append('../lib/')
+sys.path.append("../lib/")
 import rsdtlib
 import multiprocessing
 
-n_threads = 10
+n_threads = 2
 
 tf_record_path = "./tf_stack/"
 tf_record_out_path = "./tf_window/"
@@ -42,14 +42,14 @@ window = rsdtlib.Window(
                   60*60*24*30,           # Delta (size)
                   1,                     # window shift
                   10,                    # omega (min. window size)
-                  math.ceil(30/2) + 1,   # Omega (max. window size)
+                  16,                    # Omega (max. window size)
                   32,                    # tile size x
                   32,                    # tile size y
                   13,                    # bands opt
                   2,                     # bands SAR
-                  False,                 # generate labels
-                  n_threads = n_threads, # number of threads to use
-                  use_new_save = False)  # new TF Dataset save
+                  False,                 # generate triplet
+                  n_threads=n_threads,   # number of threads to use
+                  use_new_save=False)    # new TF Dataset save
 
 def write_it(args):
     location = args[0]
@@ -59,7 +59,7 @@ def write_it(args):
                           lambda j, i: (j==tile[0] and i==tile[1]))
     return
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Write the identified windows to a CSV files.
     window_list = window.windows_list()
     with open(tf_record_out_path + "windows_inference.csv",
@@ -74,9 +74,6 @@ if __name__ == '__main__':
                                  datetime.utcfromtimestamp(item[2]),
                                  item[3]])
 
-    not_used = window.preproc()
-    assert not_used == None, "Preprocessing is not meaningful for inference"
-
     # Write the final inference samples (windows without labels). The  selector
     # function specifies all tiles to consider for inference samples.
     list_tiles = []
@@ -87,10 +84,10 @@ if __name__ == '__main__':
             if selector(j, i):
                 list_tiles.append(("./infer/", (j, i)))
 
-    with multiprocessing.get_context("spawn").Pool(processes = n_threads) as p:
+    with multiprocessing.get_context("spawn").Pool(processes=n_threads) as p:
         for i, _ in enumerate(p.imap_unordered(
                                         write_it,
                                         list_tiles)):
-            sys.stdout.write('\r  Progress: {0:.1%}'.format(i/len(list_tiles)))
+            sys.stdout.write("\r  Progress: {0:.1%}".format(i/len(list_tiles)))
             sys.stdout.flush()
-    print('\n')
+    print("\n")

@@ -19,7 +19,7 @@ from dateutil.parser import isoparse
 from sentinelhub import SHConfig
 from sentinelhub import DataCollection
 import sys
-sys.path.append('../lib/')
+sys.path.append("../lib/")
 import rsdtlib
 
 # Just a small area in Ostrava/CZ
@@ -34,26 +34,27 @@ if not os.path.isdir(dst_path):
 # 'dst_path' and restricted to AoI 'my_aoi'.
 # Note: This does not yet start processing!
 convert = rsdtlib.Convert(
-                        dst_path = dst_path, 
-                        aoi = my_aoi)
+                        dst_path=dst_path,
+                        aoi=my_aoi)
 
 # Example of converting one GeoTIFF pair (one file with all bands, and one with
 # mask).
 sample = convert.process(
-                        root_path = "./LS5/",
-                        bands_tiff = "19931018T095014.TIF",   # LS5 TM 7 bands
-                        mask_tiff = "19931018T095014_QA.TIF", # LS5 TM QA band
-                        timestamp = "19931018T095014")
+                        root_path="./LS5/",
+                        bands_tiff="19931010T090051.TIF",   # LS5 TM 7 bands
+                        mask_tiff="19931010T090051_QA.TIF", # LS5 TM QA band
+                        timestamp="19931010T090051")
 
-# Shows the EOPatch, e.g.:
+# Shows the EOPatch:
 # EOPatch(
 #   data={
-#     Bands: numpy.ndarray(shape=(1, <Y>, <X>, 7), dtype=float32)
+#     Bands: numpy.ndarray(shape=(1, 46, 87, 7), dtype=float32)
 #   }
 #   mask={
-#     Mask: numpy.ndarray(shape=(1, <Y>, <X>, 1), dtype=uint16)
+#     Mask: numpy.ndarray(shape=(1, 46, 87, 1), dtype=uint16)
 #   }
-#   bbox=BBox(<BBOX COORDINATES>, crs=CRS(<EPSG NAME>))
-#   timestamp=[datetime.datetime(1993, 10, 18, 9, 50, 14)]
+#   bbox=BBox(((18.14081078, 49.83455151),
+#              (18.17269592, 49.85132019)), crs=CRS('4326'))
+#   timestamp=[datetime.datetime(1993, 10, 10, 9, 0, 51)]
 # )
 print(sample)

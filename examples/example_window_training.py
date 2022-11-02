@@ -15,7 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 import os
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 import csv
 import time
 import math
@@ -23,11 +23,11 @@ import datetime
 import numpy as np
 from datetime import datetime
 import sys
-sys.path.append('../lib/')
+sys.path.append("../lib/")
 import rsdtlib
 import multiprocessing
 
-n_threads = 10
+n_threads = 2
 
 tf_record_path = "./tf_stack/"
 tf_record_out_path = "./tf_window/"
@@ -42,31 +42,42 @@ window = rsdtlib.Window(
                   60*60*24*30,           # Delta (size)
                   1,                     # window shift
                   10,                    # omega (min. window size)
-                  math.ceil(30/2) + 1,   # Omega (max. window size)
+                  16,                    # Omega (max. window size)
                   32,                    # tile size x
                   32,                    # tile size y
                   13,                    # bands opt
                   2,                     # bands SAR
-                  True,                  # generate labels
-                  alpha = 0.25,          # alpha
-                  n_threads = n_threads, # number of threads to use
-                  use_new_save = False)  # new TF Dataset save
+                  False,                 # generate triplet
+                  n_threads=n_threads,   # number of threads to use
+                  use_new_save=False)    # new TF Dataset save
 
 def write_it(args):
+    import tensorflow as tf
+
     location = args[0]
     tile = args[1]
-    betas_file = tf_record_out_path + "betas.npy"
-    if os.path.exists(betas_file):
-        window_betas = np.load(betas_file)
-    else:
-        assert False, "The betas file has to be present to continue!"
+
+    # Just some dummy arguments (not used in this example)
+    label_args_ds = tf.data.Dataset.from_tensor_slices(
+                                                tf.constant([0])).repeat()
+
+    gen_label = lambda window, label_args:                                     \
+                  (tf.concat(
+                        # Only serialize current window (index 1)
+                        [window[0][1][:, :, :, :],  # SAR ascending
+                         window[0][2][:, :, :, :],  # SAR descending
+                         window[0][3][:, :, :, :]], # optical
+                        axis=-1),
+                   tf.ensure_shape(                 # label
+                        tf.ones([32, 32]), [32, 32]))
 
     window.write_tf_files(location,
                           lambda j, i: (j==tile[0] and i==tile[1]),
-                          window_betas)
+                          label_args_ds=label_args_ds,
+                          gen_label=gen_label)
     return
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Write the identified windows to a CSV files.
     window_list = window.windows_list()
     with open(tf_record_out_path + "windows_training.csv",
@@ -81,13 +92,6 @@ if __name__ == '__main__':
                                  datetime.utcfromtimestamp(item[2]),
                                  item[3]])
 
-    # Create the beta values for each window (needed for synthetic labeling).
-    # Also save them so they don't need to be recomputed.
-    betas_file = tf_record_out_path + "betas.npy"
-    if not os.path.exists(betas_file):
-        window_betas = window.preproc()
-        np.save(betas_file, window_betas)
-
     # Write the final training samples (windows with labels). The  selector
     # function specifies the tiles to consider for training samples.
     list_tiles = []
@@ -98,13 +102,14 @@ if __name__ == '__main__':
             if selector(j, i):
                 list_tiles.append(("./train/", (j, i)))
 
-    with multiprocessing.get_context("spawn").Pool(processes = n_threads) as p:
+    print("Writing training files:")
+    with multiprocessing.get_context("spawn").Pool(processes=n_threads) as p:
         for i, _ in enumerate(p.imap_unordered(
                                         write_it,
                                         list_tiles)):
-            sys.stdout.write('\r  Progress: {0:.1%}'.format(i/len(list_tiles)))
+            sys.stdout.write("\r  Progress: {0:.1%}".format(i/len(list_tiles)))
             sys.stdout.flush()
-    print('\n')
+    print("\n")
 
     # Write the final validation samples (windows with labels). The selector
     # function specifies the tiles to consider for validation samples.
@@ -115,10 +120,11 @@ if __name__ == '__main__':
             if selector(j, i):
                 list_tiles.append(("./val/", (j, i)))
 
-    with multiprocessing.get_context("spawn").Pool(processes = n_threads) as p:
+    print("Writing validation files:")
+    with multiprocessing.get_context("spawn").Pool(processes=n_threads) as p:
         for i, _ in enumerate(p.imap_unordered(
                                         write_it,
                                         list_tiles)):
-            sys.stdout.write('\r  Progress: {0:.1%}'.format(i/len(list_tiles)))
+            sys.stdout.write("\r  Progress: {0:.1%}".format(i/len(list_tiles)))
             sys.stdout.flush()
-    print('\n')
+    print("\n")

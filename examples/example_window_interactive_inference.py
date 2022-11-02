@@ -15,7 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 import os
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 import csv
 import time
 import math
@@ -23,19 +23,16 @@ import datetime
 import numpy as np
 from datetime import datetime
 import sys
-sys.path.append('../lib/')
+sys.path.append("../lib/")
 import rsdtlib
 import multiprocessing
 
-n_threads = 10
+n_threads = 2
 
 tf_record_path = "./tf_stack/"
 infer_out_path = "./infer_results/"
 if not os.path.isdir(infer_out_path):
     os.mkdir(infer_out_path)
-
-model_path = "<MY MODEL>"
-weights_file = "<MODEL WEIGHTS>"
 
 # Define the window parameters.
 # Note: This is not yet processing!
@@ -45,47 +42,27 @@ window = rsdtlib.Window(
                   60*60*24*30,           # Delta (size)
                   1,                     # window shift
                   10,                    # omega (min. window size)
-                  math.ceil(30/2) + 1,   # Omega (max. window size)
+                  16,                    # Omega (max. window size)
                   32,                    # tile size x
                   32,                    # tile size y
                   13,                    # bands opt
                   2,                     # bands SAR
-                  False,                 # generate labels
-                  n_threads = n_threads) # number of threads to use
+                  False,                 # generate triplet
+                  n_threads=n_threads)   # number of threads to use
 
 def infer_it(tile):
     import tensorflow as tf
 
     windows_ds = window.get_infer_dataset(tile)
 
-    # Do inference here and write result to "location"
-    # <FILL IN CODE FOR INFERENCE HERE>
-    # - Load model from "model_path"
-    # - Load weights "weights_file" to model
-
-    final_ds = windows_ds.map(lambda x: tf.concat(
-                                            [x[1],
-                                             x[2],
-                                             x[3]],
-                                            axis=-1))
-    final_ds = final_ds.padded_batch(
-                            32, # batch size
-                            padded_shapes=([16, 32, 32, 17]),
-                            padding_values=-1.0)
-
     # <PREDICT WITH MODEL>
     # E.g., result = model.predict(final_ds)
 
-    # Save results
-    np.save(infer_out_path + "{}_{}.npy".format(tile[0], tile[1]), result)
     return
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Verbose identified windows.
     window_list = window.windows_list()
-
-    not_used = window.preproc()
-    assert not_used == None, "Preprocessing is not meaningful for inference"
 
     # Iterate over the tiles and run inference on each concurrently.
     list_tiles = []
@@ -96,10 +73,10 @@ if __name__ == '__main__':
             if selector(j, i):
                 list_tiles.append((j, i))
 
-    with multiprocessing.get_context("spawn").Pool(processes = n_threads) as p:
+    with multiprocessing.get_context("spawn").Pool(processes=n_threads) as p:
         for i, _ in enumerate(p.imap_unordered(
                                         infer_it,
                                         list_tiles)):
-            sys.stdout.write('\r  Progress: {0:.1%}'.format(i/len(list_tiles)))
+            sys.stdout.write("\r  Progress: {0:.1%}".format(i/len(list_tiles)))
             sys.stdout.flush()
-    print('\n')
+    print("\n")

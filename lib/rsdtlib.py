@@ -311,8 +311,8 @@ class Retrieve:
         # directory.
         if datacollection == DataCollection.SENTINEL2_L1C:
             get_clm_task = SentinelHubInputTask(
-                data_collection = datacollection,
-                bands_feature = None,
+                data_collection=datacollection,
+                bands_feature=None,
                 additional_data = [
                     (FeatureType.MASK, "CLM")
                 ],
@@ -871,7 +871,6 @@ class Window:
                  bands_opt,
                  bands_sar,
                  generate_triple,
-                 alpha = None,
                  n_threads = 1,
                  use_new_save = False):
         import math
@@ -887,7 +886,6 @@ class Window:
         self.bands_opt = bands_opt
         self.bands_sar = bands_sar
         self.generate_triple = generate_triple
-        self.alpha = alpha
         self.n_threads = n_threads
         self.use_new_save = use_new_save
 
@@ -1070,7 +1068,7 @@ class Window:
 
         return tf.data.Dataset.zip((cur_win, ))
 
-    def _annotate_ds(self, sample_file, window_betas = None):
+    def _annotate_ds(self, sample_file, window_betas=None):
         import tensorflow as tf
 
         # Workaraound to get rid of warning reg. AUTOGRAPH
@@ -1344,9 +1342,9 @@ class Window:
     def write_tf_files(self,
                        dst_dir,
                        selector,
-                       win_filter = None,
-                       label_args_ds = None,
-                       gen_label = None):
+                       win_filter=None,
+                       label_args_ds=None,
+                       gen_label=None):
         import os
         import datetime
         import tensorflow as tf
@@ -1416,7 +1414,7 @@ class Window:
         return
 
 
-    def get_infer_dataset(self, tile, win_filter = None):
+    def get_infer_dataset(self, tile, win_filter=None):
         import os
         import datetime
         import tensorflow as tf

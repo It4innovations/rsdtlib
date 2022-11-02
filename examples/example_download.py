@@ -19,7 +19,7 @@ from dateutil.parser import isoparse
 from sentinelhub import SHConfig
 from sentinelhub import DataCollection
 import sys
-sys.path.append('../lib/')
+sys.path.append("../lib/")
 import rsdtlib
 
 # Credentials to access Sentinel Hub. See instructions:
@@ -41,10 +41,10 @@ dst_s2 = "{}/S2".format(dst_path)
 # Retrieve the observations within the given period
 # Note: This does not yet start the download!
 retrieve = rsdtlib.Retrieve(
-                        starttime = isoparse('20170101T000000'),
-                        endtime = isoparse('20170701T000000'),
-                        aoi = my_aoi,
-                        shconfig = shconfig)
+                        starttime=isoparse("20170101T000000"),
+                        endtime=isoparse("20170701T000000"),
+                        aoi=my_aoi,
+                        shconfig=shconfig)
 
 # Start download for Sentinel 1 ascending orbit direction (SAR)
 if not os.path.isdir(dst_s1_asc):
