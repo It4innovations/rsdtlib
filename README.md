@@ -15,6 +15,103 @@ The processing in stages 2 and 3 is detailed below, showing how observations are
   <img src="./images/temporal_stacking_windowing.png" />
 </p>
 
+# Example
+All examples are in folder [examples](./examples). These examples, as shown below, demonstrate each stage.
+
+## Stage 1: Download or Convert
+Observations can either be directly downloaded form `Sentinel Hub` or pre-processed locally as `GeoTIFF` files and converted to `EOPatch` samples.
+
+### Download from Sentinel Hub
+The following downloads all Sentinel 1 and 2 observations from first half of 2017, for the region specified in a shape file (here: Ostrava/CZ).
+
+    $ python example_download.py 
+      Data progress: 100.0%
+
+    Downloaded to ./obs/S1_asc: 60
+      Data progress: 100.0%
+
+    Downloaded to ./obs/S1_dsc: 60
+      Data progress: 100.0%
+
+      CLM progress: 100.0%
+
+      100%||||||||||||||||||||||||||||| 36/36 [00:01<00:00, 31.61it/s]
+    Downloaded to ./obs/S2: 36
+
+### Convert GeoTIFF Files
+If preprocessed `GeoTIFF` files are already available, these can be easily converted to `EOPatch` samples, for the region specified in a shape file (here: Ostrava/CZ). In the example below, a single `Level 1 Landsat 5 TM` observation from Octrober 1993 is converted. Note that the `GeoTIFF` covers a larger area but the conversion only considers (subsets) the region from the shape file.
+
+    $ python example_convert.py 
+    EOPatch(
+      data={
+        Bands: numpy.ndarray(shape=(1, 46, 87, 7), dtype=float32)
+      }
+      mask={
+        Mask: numpy.ndarray(shape=(1, 46, 87, 1), dtype=uint16)
+      }
+      bbox=BBox(((18.14081078, 49.83455151), (18.17269592, 49.85132019)), crs=CRS('4326'))
+      timestamp=[datetime.datetime(1993, 10, 10, 9, 0, 51)]
+    )
+
+
+## Stage 2: Stack, Assemble, and Tile
+    $ python example_stack.py 
+    Resolutions (y, x):
+        OPT: 178, 236
+        SAR: 178, 236
+    Total time stamps: 138
+    Effective time stamps (from 'starttime' with 'delta_step' steps): 65
+    List of observations to process:
+    2017-01-01 05:00:30
+    2017-01-01 10:04:07
+    ...
+    2017-06-30 05:00:20
+    2017-06-30 10:00:25
+    Total writes:  65
+
+
+## Stage 3: Windowing
+### For Training/Validation Data
+The following creates windows with labels (just dummies with values of one) and stores them on the file system.
+
+    $ python example_window_training.py 
+    List of window ranges (current):
+    2017-01-02 04:52:47 2017-02-01 04:52:17
+    2017-01-04 16:34:04 2017-02-01 04:52:17
+    ...
+    2017-06-01 04:52:06 2017-06-30 10:00:25
+    2017-06-03 16:34:37 2017-06-30 10:00:25
+    Writing training files:
+      Progress: 90.0%
+
+    Writing validation files:
+      Progress: 75.0%
+
+### For Inference
+For inference, either the windows can be stored on the file system (offline) or directly used with a model (online).
+Note that labels are not created in any of the inference examples, but is possible, too.
+
+#### Offline
+    $ python example_window_inference.py 
+    List of window ranges (current):
+    2017-01-02 04:52:47 2017-02-01 04:52:17
+    2017-01-04 16:34:04 2017-02-01 04:52:17
+    ...
+    2017-06-01 04:52:06 2017-06-30 10:00:25
+    2017-06-03 16:34:37 2017-06-30 10:00:25
+      Progress: 97.1%
+
+#### Online
+    $ python example_window_interactive_inference.py 
+    List of window ranges (current):
+    2017-01-02 04:52:47 2017-02-01 04:52:17
+    2017-01-04 16:34:04 2017-02-01 04:52:17
+    ...
+    2017-06-01 04:52:06 2017-06-30 10:00:25
+    2017-06-03 16:34:37 2017-06-30 10:00:25
+      Progress: 97.1%
+
+
 # Paper and Citation
 TBD
 
