@@ -1,7 +1,7 @@
 # rsdtlib: Remote Sensing with Deep-Temporal Data Library
 
 This project provides a Python module that allows:
-- **Stage 1:** Download remote sensing data directly from [Sentinel Hub](https://www.sentinel-hub.com/) (i.e. Sentinel 1 & 2)
+- **Stage 1:** Download remote sensing data directly from [Sentinel Hub](https://www.sentinel-hub.com/) (i.e. Sentinel 1 & 2), or convert existing `GeoTIFF` files
 - **Stage 2:** Temporally stack, assemble and tile these observations
 - **Stage 3:** Create windows of longer time series comprising these observations (i.e. deep-temporal)
 
@@ -17,6 +17,7 @@ The processing in stages 2 and 3 is detailed below, showing how observations are
 
 # Example
 All examples are in folder [examples](./examples). These examples, as shown below, demonstrate each stage.
+*Note:* Except for the download stage, all examples can be executed directly. For the download stage, the credentials for `Sentinel Hub` need to be added to the script to work.
 
 ## Stage 1: Download or Convert
 Observations can either be directly downloaded form `Sentinel Hub` or pre-processed locally as `GeoTIFF` files and converted to `EOPatch` samples.
