@@ -193,18 +193,18 @@ class Retrieve:
 
         eopatches_tmp_dir = "{}/tmp_eopatches/".format(dst_path)
         if os.path.isdir(eopatches_tmp_dir):
-            print("Error: Temporary directory already exists: {}".format(
+            print("Warning: Temporary directory already exists: {}".format(
                                                              eopatches_tmp_dir))
-            return
+#            return
         else:
             os.mkdir(eopatches_tmp_dir)
 
         if datacollection == DataCollection.SENTINEL2_L1C:
             eopatches_clm_dir = "{}/CLM_eopatches/".format(dst_path)
             if os.path.isdir(eopatches_clm_dir):
-                print("Error: Temporary directory already exists: {}".format(
-                                                             eopatches_clm_dir))
-                return
+                print("Warning: Temporary cloud mask directory already " +
+                      "exists: {}".format(eopatches_clm_dir))
+#                return
             else:
                 os.mkdir(eopatches_clm_dir)
 
@@ -287,6 +287,8 @@ class Retrieve:
             if (os.path.isdir("{}/{}".format(eopatches_out_dir,
                                             this_time_str)) or
                 os.path.isdir("{}/{}".format(eopatches_fail_dir,
+                                            this_time_str)) or
+                os.path.isdir("{}/{}".format(eopatches_tmp_dir,
                                             this_time_str))):
                     continue
 
@@ -334,6 +336,8 @@ class Retrieve:
                 if (os.path.isdir("{}/{}".format(eopatches_out_dir,
                                                 this_time_str)) or
                     os.path.isdir("{}/{}".format(eopatches_fail_dir,
+                                                this_time_str)) or
+                    os.path.isdir("{}/{}".format(eopatches_clm_dir,
                                                 this_time_str))):
                     continue
 
