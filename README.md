@@ -112,6 +112,8 @@ Note that labels are not created in any of the inference examples, but is possib
     2017-06-03 16:34:37 2017-06-30 10:00:25
       Progress: 97.1%
 
+# Use rsdtlib for ERCNN-DRS
+In our previous work of [ERCNN-DRS Urban Change Monitoring](https://github.com/It4innovations/ERCNN-DRS_urban_change_monitoring) the time series processing of (an early version of) `rsdtlib` was used. See subdirectory [`./ERCNN-DRS`](./ERCNN-DRS) for the pre-processing scripts.
 
 # Paper and Citation
 TBD
