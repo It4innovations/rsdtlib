@@ -194,8 +194,10 @@ if __name__ == '__main__':
 
     # Write the final training samples (windows with labels). The  selector
     # function specifies the tiles to consider for training samples.
+    # Note: For Limassol, a lower right triangle covering only sea is removed.
     list_tiles = []
-    selector = lambda j, i: (j + i/2) % 2 == 0
+    selector = lambda j, i: (j + i/2) % 2 == 0 and                             \
+                            not(j >= 48 and i >= 35 and i>=75+35-j)
     num_tiles_y, num_tiles_x = window.get_num_tiles()
     for j in range(0, num_tiles_y):
         for i in range(0, num_tiles_x):
@@ -212,8 +214,10 @@ if __name__ == '__main__':
 
     # Write the final validation samples (windows with labels). The selector
     # function specifies the tiles to consider for validation samples.
+    # Note: For Limassol, a lower right triangle covering only sea is removed.
     list_tiles = []
-    selector = lambda j, i: (j + (i+1)/2 + 1) % 4 == 0
+    selector = lambda j, i: (j + (i+1)/2 + 1) % 4 == 0 and                     \
+                            not(j >= 48 and i >= 35 and i>=75+35-j)
     for j in range(0, num_tiles_y):
         for i in range(0, num_tiles_x):
             if selector(j, i):
