@@ -18,36 +18,36 @@ import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 from datetime import datetime
 import sys
-sys.path.append('../lib/')
+sys.path.append('../../lib/')
 import rsdtlib
 
 # Locations where to find the input observations and where to store the stacked,
 # assembled and tiled time series.
-dst_path = "./s12/Rotterdam/"
-dst_s1_asc = "{}/S1_asc/eopatches/".format(dst_path)
-dst_s1_dsc = "{}/S1_dsc/eopatches/".format(dst_path)
-dst_s2 = "{}/S2/eopatches/".format(dst_path)
+dst_path = "./Liege/"
+dst_ers12_asc = "{}/ERS12_asc/eopatches/".format(dst_path)
+dst_ers12_dsc = "{}/ERS12_dsc/eopatches/".format(dst_path)
+dst_ls5 = "{}/LS5/eopatches/".format(dst_path)
 tf_record_path = "{}/tf_stack/".format(dst_path)
 if not os.path.isdir(tf_record_path):
     os.mkdir(tf_record_path)
 
 # Stack, assemble and tile the observations.
 stack = rsdtlib.Stack(
-                dst_s1_asc,
-                dst_s1_dsc,
-                dst_s2,
-                "L1_GND",
-                "dataMask",
-                "L1C_data",
-                "dataMask",
+                dst_ers12_asc,
+                dst_ers12_dsc,
+                dst_ls5,
+                "Bands", # L1 GND
+                "Mask",
+                "Bands", # L1 C1
+                "Mask",
                 tf_record_path,
-                datetime(2017, 1, 1, 0, 0, 0),
-                datetime(2021, 1, 17, 0, 0, 0),
-                60*60*24*2,   # delta (step)
+                datetime(1991, 7, 1, 0, 0, 0),
+                datetime(2011, 9, 1, 0, 0, 0),
+                1,            # delta (step)
                 32,           # tile size x
                 32,           # tile size y
-                13,           # bands opt
-                2)            # bands SAR
+                7,            # bands opt
+                1)            # bands SAR
 
 # Process the stacking, assembling and tiling. Each output (TFRecord) file is
 # for one tile.

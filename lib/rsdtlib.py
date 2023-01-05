@@ -377,9 +377,11 @@ class Retrieve:
 class Convert:
     def __init__(self,
                  dst_path,
-                 aoi):
+                 aoi,
+                 normalize = 255):
         self.dst_path = dst_path
         self.aoi = aoi
+        self.normalize = normalize
 
     def process(self, root_path, bands_tiff, mask_tiff, timestamp):
         import numpy as np
@@ -424,7 +426,7 @@ class Convert:
 
                 # Normalize 'Bands'
                 bands_mod = this_patch.data["Bands"]
-                bands_mod = bands_mod[:,:,:,:] / 255
+                bands_mod = bands_mod[:,:,:,:] / self.normalize
                 this_patch.data["Bands"] = bands_mod
 
                 new_datetime = datetime.strptime(self.timestamp,

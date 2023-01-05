@@ -23,19 +23,19 @@ import datetime
 import numpy as np
 from datetime import datetime
 import sys
-sys.path.append('../lib/')
+sys.path.append('../../lib/')
 import rsdtlib
 import multiprocessing
 
 n_threads = 4
 
-dst_path = "./s12/Rotterdam/"
+dst_path = "./Limassol/"
 tf_record_path = "{}/tf_stack/".format(dst_path)
 infer_out_path = "{}/infer_results/".format(dst_path)
 if not os.path.isdir(infer_out_path):
     os.mkdir(infer_out_path)
 
-model_path = "./s12/model/"
+model_path = "./model/"
 best_weights_file = "{}/best_weights_ercnn_drs.hdf5".format(model_path)
 
 tile_size_x = 32

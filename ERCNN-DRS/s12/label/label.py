@@ -15,7 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 import sys
-sys.path.append('./s12/external/')
+sys.path.append('../external/')
 from omnibus import OMNIBUS
 
 class Synthetic_Label():
@@ -104,12 +104,12 @@ class Synthetic_Label():
                    s1_ascending.shape[2], s1_descending.shape[2], s2.shape[2])
 
         s2_before_avg = np.mean(s2_before, axis=0)
-        s2_before_ebbi = Synthetic_Label.ENDISI_S2(s2_before_avg, beta1, shift)
+        s2_before_endisi = Synthetic_Label.ENDISI_S2(s2_before_avg, beta1, shift)
 
         s2_after_avg = np.mean(s2_after, axis=0)
-        s2_after_ebbi = Synthetic_Label.ENDISI_S2(s2_after_avg, beta3, shift)
+        s2_after_endisi = Synthetic_Label.ENDISI_S2(s2_after_avg, beta3, shift)
 
-        s2_diff = np.abs(s2_after_ebbi - s2_before_ebbi)
+        s2_diff = np.abs(s2_after_endisi - s2_before_endisi)
 
         chmap_asc = Synthetic_Label.omnibus_chmap_dual(
                                     s1_ascending,
@@ -124,7 +124,7 @@ class Synthetic_Label():
         return np.float32(np.clip(chmap * s2_diff * 10, 0.0, 1.0))
 
     @staticmethod
-    def compute_label_S2_S1_ENDISI_beta_coeefs(s2_before, s2_after):
+    def compute_label_S2_S1_ENDISI_beta_coefs(s2_before, s2_after):
         import math
         import numpy as np
 

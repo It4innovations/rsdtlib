@@ -23,13 +23,13 @@ import datetime
 import numpy as np
 from datetime import datetime
 import sys
-sys.path.append("../lib/")
+sys.path.append("../../lib/")
 import rsdtlib
 import multiprocessing
 
 n_threads = 4
 
-dst_path = "./s12/Rotterdam/"
+dst_path = "./Limassol/"
 tf_record_path = "{}/tf_stack/".format(dst_path)
 tf_record_out_path = "{}/tf_window/".format(dst_path)
 if not os.path.isdir(tf_record_out_path):
@@ -57,13 +57,13 @@ window = rsdtlib.Window(
 
 def write_it(args):
     import tensorflow as tf
-    sys.path.append('./s12/label/')
+    sys.path.append('./label/')
     from label import Synthetic_Label
 
     location = args[0]
     tile = args[1]
 
-    alpha = 0.25
+    alpha = 0.50
 
     betas_file = tf_record_out_path + "betas.npy"
     if os.path.exists(betas_file):
@@ -103,14 +103,14 @@ def betas_preproc():
     import numpy as np
     import sys
     import tensorflow as tf
-    sys.path.append('./s12/label/')
+    sys.path.append('./label/')
     from label import Synthetic_Label
 
     def generate_beta_coeffs(stack, prev_win, next_win):
         import tensorflow as tf
 
         return tf.ensure_shape(tf.numpy_function(
-                    Synthetic_Label.compute_label_S2_S1_ENDISI_beta_coeefs,
+                    Synthetic_Label.compute_label_S2_S1_ENDISI_beta_coefs,
                     [prev_win[3], next_win[3]], tf.float32),
                     [2, 3])
 
@@ -194,8 +194,10 @@ if __name__ == '__main__':
 
     # Write the final training samples (windows with labels). The  selector
     # function specifies the tiles to consider for training samples.
+    # Note: For Limassol, a lower right triangle covering only sea is removed.
     list_tiles = []
-    selector = lambda j, i: (j + i/2) % 2 == 0
+    selector = lambda j, i: (j + i/2) % 2 == 0 and                             \
+                            not(j >= 48 and i >= 35 and i>=75+35-j)
     num_tiles_y, num_tiles_x = window.get_num_tiles()
     for j in range(0, num_tiles_y):
         for i in range(0, num_tiles_x):
@@ -212,8 +214,10 @@ if __name__ == '__main__':
 
     # Write the final validation samples (windows with labels). The selector
     # function specifies the tiles to consider for validation samples.
+    # Note: For Limassol, a lower right triangle covering only sea is removed.
     list_tiles = []
-    selector = lambda j, i: (j + (i+1)/2 + 1) % 4 == 0
+    selector = lambda j, i: (j + (i+1)/2 + 1) % 4 == 0 and                     \
+                            not(j >= 48 and i >= 35 and i>=75+35-j)
     for j in range(0, num_tiles_y):
         for i in range(0, num_tiles_x):
             if selector(j, i):

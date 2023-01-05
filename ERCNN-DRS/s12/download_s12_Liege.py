@@ -19,7 +19,7 @@ from dateutil.parser import isoparse
 from sentinelhub import SHConfig
 from sentinelhub import DataCollection
 import sys
-sys.path.append('../lib/')
+sys.path.append('../../lib/')
 import rsdtlib
 
 # Credentials to access Sentinel Hub. See instructions:
@@ -29,10 +29,10 @@ shconfig.instance_id = "<YOUR INSTANCE ID>"
 shconfig.sh_client_id = "<YOUR CLIENT ID>"
 shconfig.sh_client_secret = "<YOUR CLIENT SECRET>"
 
-my_aoi = "./s12/AoIs/Limassol_4326.shp"
+my_aoi = "./AoIs/Liege_4326.shp"
 
 # Locations where to store the observations
-dst_path = "./s12/Limassol/"
+dst_path = "./Liege/"
 if not os.path.isdir(dst_path):
     os.mkdir(dst_path)
 dst_s1_asc = "{}/S1_asc".format(dst_path)

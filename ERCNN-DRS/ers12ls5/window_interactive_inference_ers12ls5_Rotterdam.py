@@ -23,19 +23,19 @@ import datetime
 import numpy as np
 from datetime import datetime
 import sys
-sys.path.append('../lib/')
+sys.path.append('../../lib/')
 import rsdtlib
 import multiprocessing
 
 n_threads = 4
 
-dst_path = "./s12/Liege/"
+dst_path = "./Rotterdam/"
 tf_record_path = "{}/tf_stack/".format(dst_path)
 infer_out_path = "{}/infer_results/".format(dst_path)
 if not os.path.isdir(infer_out_path):
     os.mkdir(infer_out_path)
 
-model_path = "./s12/model/"
+model_path = "./model/"
 best_weights_file = "{}/best_weights_ercnn_drs.hdf5".format(model_path)
 
 tile_size_x = 32
@@ -46,14 +46,14 @@ tile_size_y = 32
 window = rsdtlib.Window(
                   tf_record_path,
                   None,                  # No need for "tf_record_out_path"
-                  60*60*24*182,          # Delta (size)
+                  60*60*24*365,          # Delta (size)
                   5,                     # window shift
-                  35,                    # omega (min. window size)
-                  math.ceil(182/2) + 1,  # Omega (max. window size)
+                  25,                    # omega (min. window size)
+                  110,                   # Omega (max. window size)
                   tile_size_x,           # tile size x
                   tile_size_y,           # tile size y
-                  13,                    # bands opt
-                  2,                     # bands SAR
+                  7,                     # bands opt
+                  1,                     # bands SAR
                   False,                 # generate labels
                   n_threads = n_threads) # number of threads to use
 
@@ -66,10 +66,10 @@ def infer_it(tile):
 
     # Do inference here and write result to "location"
     ercnn_drs = ERCNN_DRS(True, True)
-    model = ercnn_drs.build_model(math.ceil(182/2) + 1,
+    model = ercnn_drs.build_model(110,
                                   tile_size_y,
                                   tile_size_x,
-                                  17)
+                                  9)
     model.load_weights(best_weights_file)
 
     final_ds = windows_ds.map(lambda x: tf.concat(
@@ -80,10 +80,10 @@ def infer_it(tile):
     final_ds = final_ds.padded_batch(
                             128, # batch size (large for fast processing)
                             padded_shapes=(
-                                    [math.ceil(182/2) + 1,
+                                    [110,
                                      tile_size_y,
                                      tile_size_x,
-                                     17]),
+                                     9]),
                             padding_values=-1.0)
 
     result = tf.zeros([0, tile_size_y, tile_size_x])

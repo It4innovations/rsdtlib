@@ -18,12 +18,12 @@ import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 from datetime import datetime
 import sys
-sys.path.append('../lib/')
+sys.path.append('../../lib/')
 import rsdtlib
 
 # Locations where to find the input observations and where to store the stacked,
 # assembled and tiled time series.
-dst_path = "./s12/Liege/"
+dst_path = "./Liege/"
 dst_s1_asc = "{}/S1_asc/eopatches/".format(dst_path)
 dst_s1_dsc = "{}/S1_dsc/eopatches/".format(dst_path)
 dst_s2 = "{}/S2/eopatches/".format(dst_path)

@@ -23,13 +23,13 @@ import datetime
 import numpy as np
 from datetime import datetime
 import sys
-sys.path.append("../lib/")
+sys.path.append("../../lib/")
 import rsdtlib
 import multiprocessing
 
 n_threads = 4
 
-dst_path = "./s12/Limassol/"
+dst_path = "./Limassol/"
 tf_record_path = "{}/tf_stack/".format(dst_path)
 tf_record_out_path = "{}/tf_window/".format(dst_path)
 if not os.path.isdir(tf_record_out_path):
@@ -43,21 +43,21 @@ tile_size_y = 32
 window = rsdtlib.Window(
                   tf_record_path,
                   tf_record_out_path,
-                  60*60*24*182,          # Delta (size)
+                  60*60*24*365,          # Delta (size)
                   1,                     # window shift
-                  35,                    # omega (min. window size)
-                  math.ceil(182/2) + 1,  # Omega (max. window size)
+                  25,                    # omega (min. window size)
+                  110,                   # Omega (max. window size)
                   tile_size_x,           # tile size x
                   tile_size_y,           # tile size y
-                  13,                    # bands opt
-                  2,                     # bands SAR
+                  7,                     # bands opt
+                  1,                     # bands SAR
                   True,                  # generate triplet
                   n_threads=n_threads,   # number of threads to use
                   use_new_save=False)    # new TF Dataset save
 
 def write_it(args):
     import tensorflow as tf
-    sys.path.append('./s12/label/')
+    sys.path.append('./label/')
     from label import Synthetic_Label
 
     location = args[0]
@@ -81,7 +81,7 @@ def write_it(args):
                          data[1][3][:, :, :, :]], # Optical
                          axis=-1),
                    tf.ensure_shape(tf.numpy_function(
-                        Synthetic_Label.compute_label_S2_S1_ENDISI,
+                        Synthetic_Label.compute_label_LS5_ERS12_ENDISI,
                         [data[1][1][:, :, :, :], # SAR ascending
                          data[1][2][:, :, :, :], # SAR descending
                          data[1][3][:, :, :, :], # Optical
@@ -103,14 +103,14 @@ def betas_preproc():
     import numpy as np
     import sys
     import tensorflow as tf
-    sys.path.append('./s12/label/')
+    sys.path.append('./label/')
     from label import Synthetic_Label
 
     def generate_beta_coeffs(stack, prev_win, next_win):
         import tensorflow as tf
 
         return tf.ensure_shape(tf.numpy_function(
-                    Synthetic_Label.compute_label_S2_S1_ENDISI_beta_coeefs,
+                    Synthetic_Label.compute_label_LS5_ERS12_ENDISI_beta_coefs,
                     [prev_win[3], next_win[3]], tf.float32),
                     [2, 3])
 
@@ -162,9 +162,9 @@ def betas_preproc():
     window_betas_tmp = []
     for window_no in range(0, all_coeffs.shape[1]):
         print(window_no)
-        beta1 = Synthetic_Label.compute_label_S2_S1_ENDISI_comp_betas(
+        beta1 = Synthetic_Label.compute_label_LS5_ERS12_ENDISI_comp_betas(
                                           all_coeffs[:, window_no, 0, :])
-        beta2 = Synthetic_Label.compute_label_S2_S1_ENDISI_comp_betas(
+        beta2 = Synthetic_Label.compute_label_LS5_ERS12_ENDISI_comp_betas(
                                           all_coeffs[:, window_no, 1, :])
         window_betas_tmp.append((beta1, beta2))
     return np.array(window_betas_tmp)
@@ -194,10 +194,9 @@ if __name__ == '__main__':
 
     # Write the final training samples (windows with labels). The  selector
     # function specifies the tiles to consider for training samples.
-    # Note: For Limassol, a lower right triangle covering only sea is removed.
     list_tiles = []
     selector = lambda j, i: (j + i/2) % 2 == 0 and                             \
-                            not(j >= 48 and i >= 35 and i>=75+35-j)
+                            not(j >= 15 and i >= 45 and i>=48+45-j)
     num_tiles_y, num_tiles_x = window.get_num_tiles()
     for j in range(0, num_tiles_y):
         for i in range(0, num_tiles_x):
@@ -214,10 +213,9 @@ if __name__ == '__main__':
 
     # Write the final validation samples (windows with labels). The selector
     # function specifies the tiles to consider for validation samples.
-    # Note: For Limassol, a lower right triangle covering only sea is removed.
     list_tiles = []
     selector = lambda j, i: (j + (i+1)/2 + 1) % 4 == 0 and                     \
-                            not(j >= 48 and i >= 35 and i>=75+35-j)
+                            not(j >= 15 and i >= 45 and i>=48+45-j)
     for j in range(0, num_tiles_y):
         for i in range(0, num_tiles_x):
             if selector(j, i):
