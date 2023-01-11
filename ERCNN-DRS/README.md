@@ -8,7 +8,7 @@ The scripts cover all pre-processing steps from downloading, stacking and window
 Usage example:
 
     $ cd ./s12/
-    $ python download_s12_Liege.py # Add you Sentinel-Hub credentials in the script
+    $ python download_s12_Liege.py # Add your Sentinel-Hub credentials in the script
     $ python stack_s12_Liege.py
     $ python window_training_s12_Liege.py
 
