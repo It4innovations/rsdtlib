@@ -124,7 +124,7 @@ class Synthetic_Label():
         return np.float32(np.clip(chmap * s2_diff * 10, 0.0, 1.0))
 
     @staticmethod
-    def compute_label_S2_S1_ENDISI_beta_coefs(s2_before, s2_after):
+    def compute_label_S2_S1_ENDISI_beta_coeffs(s2_before, s2_after):
         import math
         import numpy as np
 

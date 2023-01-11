@@ -110,7 +110,7 @@ def betas_preproc():
         import tensorflow as tf
 
         return tf.ensure_shape(tf.numpy_function(
-                    Synthetic_Label.compute_label_S2_S1_ENDISI_beta_coefs,
+                    Synthetic_Label.compute_label_S2_S1_ENDISI_beta_coeffs,
                     [prev_win[3], next_win[3]], tf.float32),
                     [2, 3])
 

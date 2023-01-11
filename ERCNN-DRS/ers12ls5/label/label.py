@@ -132,7 +132,7 @@ class Synthetic_Label():
         return np.float32(np.clip(chmap * ls5_diff * 30, 0.0, 1.0))
 
     @staticmethod
-    def compute_label_LS5_ERS12_ENDISI_beta_coefs(ls5_before, ls5_after):
+    def compute_label_LS5_ERS12_ENDISI_beta_coeffs(ls5_before, ls5_after):
         import math
         import numpy as np
 
