@@ -1259,10 +1259,6 @@ class Window:
                              label_args_ds,
                              gen_label):
         import tensorflow as tf
-        import sys
-        sys.path.append('../label/')
-        from label import Synthetic_Label
-
 
         def _bytes_feature(value):
             if isinstance(value, type(tf.constant(0))):
@@ -1301,7 +1297,6 @@ class Window:
 
     def _write_inference_data(self, tf_record_out_file, dataset):
         import tensorflow as tf
-        import sys
 
         def _get_sample(data):
             res = tf.concat(
