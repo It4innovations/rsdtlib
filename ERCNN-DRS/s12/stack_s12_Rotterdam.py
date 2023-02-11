@@ -46,8 +46,8 @@ stack = rsdtlib.Stack(
                 60*60*24*2,   # delta (step)
                 32,           # tile size x
                 32,           # tile size y
-                13,           # bands opt
-                2)            # bands SAR
+                2,            # bands SAR
+                13)           # bands opt
 
 # Process the stacking, assembling and tiling. Each output (TFRecord) file is
 # for one tile.

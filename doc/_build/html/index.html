@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html class="writer-html4" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Welcome to rsdtlib’s documentation! &mdash; rsdtlib 1.0 documentation</title><link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="#" class="icon icon-home">
+            rsdtlib
+          </a>
+              <div class="version">
+                1.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">Welcome to rsdtlib’s documentation!</a></li>
+<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
+</ul>
+</div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">rsdtlib</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="#" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Welcome to rsdtlib’s documentation!</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="welcome-to-rsdtlib-s-documentation">
+<h1>Welcome to rsdtlib’s documentation!<a class="headerlink" href="#welcome-to-rsdtlib-s-documentation" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+</div>
+</div>
+<div class="section" id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></li>
+<li><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></li>
+<li><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></li>
+</ul>
+<div class="figure">
+<img alt="_images/rsdtlib_pipeline.png" src="_images/rsdtlib_pipeline.png" />
+</div>
+<div class="figure">
+<img alt="_images/temporal_stacking_windowing.png" src="_images/temporal_stacking_windowing.png" />
+</div>
+<span class="target" id="module-rsdtlib"></span><dl class="class">
+<dt id="rsdtlib.Convert">
+<em class="property">class </em><code class="descclassname">rsdtlib.</code><code class="descname">Convert</code><span class="sig-paren">(</span><em>dst_path</em>, <em>aoi</em>, <em>normalize=255.0</em><span class="sig-paren">)</span><a class="headerlink" href="#rsdtlib.Convert" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class for converting GeoTIFF files to EOPatches.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>dst_path</strong> (<em>str</em>) – Path on filesystem to store the converted observations at</li>
+<li><strong>aoi</strong> (<em>str</em>) – Area of Interest (path to shape file)</li>
+<li><strong>normalize</strong> (<em>float</em>) – Divisor to use for normalization
+(e.g., 255.0 for 8 bit unsigned integer types)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="rsdtlib.Convert.process">
+<code class="descname">process</code><span class="sig-paren">(</span><em>root_path</em>, <em>bands_tiff</em>, <em>mask_tiff</em>, <em>timestamp</em><span class="sig-paren">)</span><a class="headerlink" href="#rsdtlib.Convert.process" title="Permalink to this definition">¶</a></dt>
+<dd><p>Start the conversion process. Merge the GeoTIFF with the bands
+<code class="docutils literal notranslate"><span class="pre">bands_tiff</span></code> and the GeoTIFF containing a mask <code class="docutils literal notranslate"><span class="pre">mask_tiff</span></code>
+from the same directory <code class="docutils literal notranslate"><span class="pre">root_path</span></code>. Annotate the result with a
+timestamp <code class="docutils literal notranslate"><span class="pre">timestmap</span></code> and store it as a single EOPatch.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>root_path</strong> (<em>str</em>) – Root directory of all GeoTIFF files</li>
+<li><strong>bands_tiff</strong> (<em>str</em>) – Filename of the GeoTIFF containing the bands</li>
+<li><strong>mask_tiff</strong> (<em>str</em>) – Filename of the GeoTIFF containing the mask</li>
+<li><strong>timestamp</strong> (<em>datetime.datetime</em>) – Timestamp of the converted observation</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">EOPatch object</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">eolearn.core.EOPatch</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="rsdtlib.RS_Type">
+<em class="property">class </em><code class="descclassname">rsdtlib.</code><code class="descname">RS_Type</code><a class="headerlink" href="#rsdtlib.RS_Type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Indicate the remote sensing type.</p>
+<dl class="attribute">
+<dt id="rsdtlib.RS_Type.OPT">
+<code class="descname">OPT</code><em class="property"> = 0</em><a class="headerlink" href="#rsdtlib.RS_Type.OPT" title="Permalink to this definition">¶</a></dt>
+<dd><p>Optical multispectral type</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rsdtlib.RS_Type.SAR_ASC">
+<code class="descname">SAR_ASC</code><em class="property"> = 1</em><a class="headerlink" href="#rsdtlib.RS_Type.SAR_ASC" title="Permalink to this definition">¶</a></dt>
+<dd><p>Synthetic Aperture Radar (SAR) in ascending orbit direction</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rsdtlib.RS_Type.SAR_DSC">
+<code class="descname">SAR_DSC</code><em class="property"> = 2</em><a class="headerlink" href="#rsdtlib.RS_Type.SAR_DSC" title="Permalink to this definition">¶</a></dt>
+<dd><p>Synthetic Aperture Radar (SAR) in descending orbit direction</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rsdtlib.RS_Type.UNKOWN">
+<code class="descname">UNKOWN</code><em class="property"> = -1</em><a class="headerlink" href="#rsdtlib.RS_Type.UNKOWN" title="Permalink to this definition">¶</a></dt>
+<dd><p>Unspecified type</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="rsdtlib.Retrieve">
+<em class="property">class </em><code class="descclassname">rsdtlib.</code><code class="descname">Retrieve</code><span class="sig-paren">(</span><em>starttime</em>, <em>endtime</em>, <em>aoi</em>, <em>shconfig</em><span class="sig-paren">)</span><a class="headerlink" href="#rsdtlib.Retrieve" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Class for downloading observations from Sentinel Hub</dt>
+<dd>(<a class="reference external" href="https://www.sentinel-hub.com/">https://www.sentinel-hub.com/</a>).</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>starttime</strong> (<em>datetime.datetime</em>) – Starting time of the time series to retrieve</li>
+<li><strong>endtime</strong> (<em>datetime.datetime</em>) – End time of the time series to retrieve</li>
+<li><strong>aoi</strong> (<em>str</em>) – Area of Interest (path to shape file)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="rsdtlib.Retrieve.get_images">
+<code class="descname">get_images</code><span class="sig-paren">(</span><em>datacollection</em>, <em>dst_path</em>, <em>maxcc=1.0</em><span class="sig-paren">)</span><a class="headerlink" href="#rsdtlib.Retrieve.get_images" title="Permalink to this definition">¶</a></dt>
+<dd><p>Download the observations for the specified remote sensing type
+<code class="docutils literal notranslate"><span class="pre">datacollection</span></code> and maximum cloud coverage <code class="docutils literal notranslate"><span class="pre">maxcc</span></code> (if applicable).
+The observations are stored on the filesystem at <code class="docutils literal notranslate"><span class="pre">dst_path</span></code>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>datacollection</strong> (<em>sentinelhub.DataCollection</em>) – Data collection to download</li>
+<li><strong>dst_path</strong> (<em>str</em>) – Path on filesystem to store observations at</li>
+<li><strong>maxcc</strong> (<em>float</em>) – Maximum cloud coverage (default = <code class="docutils literal notranslate"><span class="pre">1.0</span></code>)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Number of retrieved observations</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">int</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="rsdtlib.Stack">
+<em class="property">class </em><code class="descclassname">rsdtlib.</code><code class="descname">Stack</code><span class="sig-paren">(</span><em>sar_asc_path</em>, <em>sar_dsc_path</em>, <em>opt_path</em>, <em>sar_bands_name</em>, <em>sar_mask_name</em>, <em>opt_bands_name</em>, <em>opt_mask_name</em>, <em>tf_record_path</em>, <em>starttime</em>, <em>endtime</em>, <em>delta_step</em>, <em>tile_size_x</em>, <em>tile_size_y</em>, <em>bands_sar</em>, <em>bands_opt</em><span class="sig-paren">)</span><a class="headerlink" href="#rsdtlib.Stack" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class for stacking, assembling and tiling. The stacking is independent of
+each observation type. Assembling combines all observations over time, of
+types optical multispectral, and Synthetic Aperture Radar (SAR) in
+ascending and descending orbit directions.</p>
+<p>Note: Even though the <code class="docutils literal notranslate"><span class="pre">starttime</span></code> might be later, earlier observations
+are still considered for stacking. That is, earlier observation pixels are
+carried forward if masked at <code class="docutils literal notranslate"><span class="pre">starttime</span></code>. However, only observation time
+stamps are effectively written, that are within the time frame of
+<code class="docutils literal notranslate"><span class="pre">starttime</span></code> and <code class="docutils literal notranslate"><span class="pre">endtime</span></code>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>sar_asc_path</strong> (<em>str</em>) – Directory of SAR observations (ascending)</li>
+<li><strong>sar_dsc_path</strong> (<em>str</em>) – Directory of SAR observations (descending)</li>
+<li><strong>opt_path</strong> (<em>str</em>) – Directory of optical multispectral observations</li>
+<li><strong>sar_bands_name</strong> (<em>str</em>) – Name of the SAR bands</li>
+<li><strong>sar_mask_name</strong> (<em>str</em>) – Name of the SAR mask</li>
+<li><strong>opt_bands_name</strong> (<em>str</em>) – Name of the optical multispectral bands</li>
+<li><strong>opt_mask_name</strong> (<em>str</em>) – Name of the optical multispectral mask</li>
+<li><strong>tf_record_path</strong> (<em>str</em>) – Tensorflow Record path to store results</li>
+<li><strong>starttime</strong> (<em>datetime.datetime</em>) – Starting time of the time series to consider</li>
+<li><strong>endtime</strong> (<em>datetime.datetime</em>) – End time of the time series to rconsider</li>
+<li><strong>delta_step</strong> (<em>int</em>) – The step value to avoid redundant observations
+temporally close together</li>
+<li><strong>tile_size_x</strong> (<em>int</em>) – Tile size in <code class="docutils literal notranslate"><span class="pre">x</span></code> dimension</li>
+<li><strong>tile_size_y</strong> (<em>int</em>) – Tile size in <code class="docutils literal notranslate"><span class="pre">y</span></code> dimension</li>
+<li><strong>bands_sar</strong> (<em>int</em>) – Number of SAR bands for each orbit direction
+(<span class="math notranslate nohighlight">\(b_{SAR}^{[asc\mid dsc]}\)</span>)</li>
+<li><strong>bands_opt</strong> (<em>int</em>) – Number of optical multispectral bands (<span class="math notranslate nohighlight">\(b_{OPT}\)</span>)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="rsdtlib.Stack.process">
+<code class="descname">process</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rsdtlib.Stack.process" title="Permalink to this definition">¶</a></dt>
+<dd><p>Start the stacking, assembling and tiling process.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">None</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="rsdtlib.Window">
+<em class="property">class </em><code class="descclassname">rsdtlib.</code><code class="descname">Window</code><span class="sig-paren">(</span><em>tf_record_path</em>, <em>tf_record_out_path</em>, <em>delta_size</em>, <em>window_stride</em>, <em>omega</em>, <em>Omega</em>, <em>tile_size_x</em>, <em>tile_size_y</em>, <em>bands_sar</em>, <em>bands_opt</em>, <em>generate_triple</em>, <em>n_threads=1</em>, <em>use_new_save=False</em><span class="sig-paren">)</span><a class="headerlink" href="#rsdtlib.Window" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class for windowing the time series of observations.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>tf_record_path</strong> (<em>str</em>) – Path to stacked TFRecord files</li>
+<li><strong>tf_record_out_path</strong> (<em>str</em>) – Output path to windowed TFRecord files</li>
+<li><strong>delta_size</strong> (<em>int</em>) – Window size in seconds (<span class="math notranslate nohighlight">\(\Delta\)</span>)</li>
+<li><strong>window_stride</strong> (<em>int</em>) – Stride of window (<span class="math notranslate nohighlight">\(\rho\)</span>)</li>
+<li><strong>omega</strong> (<em>int</em>) – Minimum window size in number of observations (<span class="math notranslate nohighlight">\(\omega\)</span>)</li>
+<li><strong>Omega</strong> (<em>int</em>) – Maximum window size in number of observations (<span class="math notranslate nohighlight">\(\Omega\)</span>)</li>
+<li><strong>tile_size_x</strong> (<em>int</em>) – Tile size in <code class="docutils literal notranslate"><span class="pre">x</span></code> dimension</li>
+<li><strong>tile_size_y</strong> (<em>int</em>) – Tile size in <code class="docutils literal notranslate"><span class="pre">y</span></code> dimension</li>
+<li><strong>bands_sar</strong> (<em>int</em>) – Number of SAR bands for each orbit direction
+(<span class="math notranslate nohighlight">\(b_{SAR}^{[asc\mid dsc]}\)</span>)</li>
+<li><strong>bands_opt</strong> (<em>int</em>) – Number of optical multispectral bands (<span class="math notranslate nohighlight">\(b_{OPT}\)</span>)</li>
+<li><strong>generate_triple</strong> (<em>boolean</em>) – Indicate whether a window triplet should be
+generated or just a single window</li>
+<li><strong>n_threads</strong> (<em>int</em>) – Number of threads to use for concurrent processing
+(default = <code class="docutils literal notranslate"><span class="pre">1</span></code>)</li>
+<li><strong>use_new_save</strong> (<em>boolean</em>) – Whether to use <code class="docutils literal notranslate"><span class="pre">tf.data.Dataset.save(...)</span></code> from
+Tensorflow if <code class="docutils literal notranslate"><span class="pre">true</span></code>. If <code class="docutils literal notranslate"><span class="pre">flase</span></code> (default) create TFRecord files.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="rsdtlib.Window.get_infer_dataset">
+<code class="descname">get_infer_dataset</code><span class="sig-paren">(</span><em>tile</em>, <em>win_filter=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rsdtlib.Window.get_infer_dataset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a dataset for inference.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>tile</strong> (<em>[</em><em>y</em><em>, </em><em>x</em><em>]</em>) – Tile coordinates in <code class="docutils literal notranslate"><span class="pre">y</span></code> and <code class="docutils literal notranslate"><span class="pre">x</span></code> dimensions</li>
+<li><strong>win_filter</strong> (<em>tf.data.Dataset.filter predicate</em>) – Filter for windows (default = <code class="docutils literal notranslate"><span class="pre">None</span></code>)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">If tile exists, return the dataset, otherwise <code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><code class="docutils literal notranslate"><span class="pre">tf.data.Dataset</span></code> | <code class="docutils literal notranslate"><span class="pre">None</span></code></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="rsdtlib.Window.get_num_tiles">
+<code class="descname">get_num_tiles</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rsdtlib.Window.get_num_tiles" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the number of y-x tiles. It assumes that no gap of tiles exist.</p>
+<p>Note: Omitting tiles is possible. This function only takes the maximum
+y-x tile coordinates. In further processing a selector can be used to
+filter non-available tiles.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Returns a tuple <code class="docutils literal notranslate"><span class="pre">(y,</span> <span class="pre">x)</span></code></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">Tuple of <code class="docutils literal notranslate"><span class="pre">(int,</span> <span class="pre">int)</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="rsdtlib.Window.windows_list">
+<code class="descname">windows_list</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rsdtlib.Window.windows_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieve the list of windows without constructing them.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Returns a list of window descriptors</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">Each window is described as a quadruple
+<code class="docutils literal notranslate"><span class="pre">(id,</span> <span class="pre">starttime,</span> <span class="pre">enddtime,</span> <span class="pre">no_obs)</span></code>:<blockquote>
+<div><ul class="simple">
+<li><code class="docutils literal notranslate"><span class="pre">id</span></code>: ID of the window (zero based, sequential enumeration)</li>
+<li><code class="docutils literal notranslate"><span class="pre">starttime</span></code>: Time stamp of first observation in window</li>
+<li><code class="docutils literal notranslate"><span class="pre">endtime</span></code>: Time stamp of last observation in window</li>
+<li><code class="docutils literal notranslate"><span class="pre">no_obs</span></code>: Number of observations in window</li>
+</ul>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="rsdtlib.Window.write_tf_files">
+<code class="descname">write_tf_files</code><span class="sig-paren">(</span><em>dst_dir</em>, <em>selector</em>, <em>win_filter=None</em>, <em>label_args_ds=None</em>, <em>gen_label=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rsdtlib.Window.write_tf_files" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write the windows as TFRecord files (one for each tile).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>dst_dir</strong> (<em>str</em>) – Path to destination where to store the TFRecord files</li>
+<li><strong>selector</strong> – Functor to query which tile should be written</li>
+<li><strong>win_filter</strong> (<em>tf.data.Dataset.filter predicate</em>) – Filter for windows (default = <code class="docutils literal notranslate"><span class="pre">None</span></code>)</li>
+<li><strong>label_args_ds</strong> (<em>tf.data.Dataset</em>) – Arguments for labeling (default = <code class="docutils literal notranslate"><span class="pre">None</span></code>). The
+sequence has to be identical to the samples.</li>
+<li><strong>gen_label</strong> (<em>gen_label</em><em>(</em><em>data</em><em>, </em><em>label_args</em><em>) </em><em>-&gt;</em><em> [</em><em>y</em><em>, </em><em>x</em><em>]</em>) – Functor to generate the labels (default = <code class="docutils literal notranslate"><span class="pre">None</span></code>).
+Training data is provided by <code class="docutils literal notranslate"><span class="pre">data</span></code>, the label arguments via
+<code class="docutils literal notranslate"><span class="pre">label_args</span></code>. The output is a label in spatial <code class="docutils literal notranslate"><span class="pre">y</span></code> and <code class="docutils literal notranslate"><span class="pre">x</span></code>.
+dimension.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">None</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Georg Zitzlsberger.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

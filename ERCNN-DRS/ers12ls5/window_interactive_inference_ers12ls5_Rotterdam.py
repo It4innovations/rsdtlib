@@ -47,13 +47,13 @@ window = rsdtlib.Window(
                   tf_record_path,
                   None,                  # No need for "tf_record_out_path"
                   60*60*24*365,          # Delta (size)
-                  5,                     # window shift
+                  5,                     # window stride
                   25,                    # omega (min. window size)
                   110,                   # Omega (max. window size)
                   tile_size_x,           # tile size x
                   tile_size_y,           # tile size y
-                  7,                     # bands opt
                   1,                     # bands SAR
+                  7,                     # bands opt
                   False,                 # generate labels
                   n_threads = n_threads) # number of threads to use
 

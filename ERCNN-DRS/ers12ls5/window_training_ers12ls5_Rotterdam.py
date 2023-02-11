@@ -44,13 +44,13 @@ window = rsdtlib.Window(
                   tf_record_path,
                   tf_record_out_path,
                   60*60*24*365,          # Delta (size)
-                  1,                     # window shift
+                  1,                     # window stride
                   25,                    # omega (min. window size)
                   110,                   # Omega (max. window size)
                   tile_size_x,           # tile size x
                   tile_size_y,           # tile size y
-                  7,                     # bands opt
                   1,                     # bands SAR
+                  7,                     # bands opt
                   True,                  # generate triplet
                   n_threads=n_threads,   # number of threads to use
                   use_new_save=False)    # new TF Dataset save

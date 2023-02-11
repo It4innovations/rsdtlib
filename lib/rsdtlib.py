@@ -1,6 +1,6 @@
 #
 # Author: Georg Zitzlsberger (georg.zitzlsberger<ad>vsb.cz)
-# Copyright (C) 2020-2022 Georg Zitzlsberger, IT4Innovations,
+# Copyright (C) 2020-2023 Georg Zitzlsberger, IT4Innovations,
 #                         VSB-Technical University of Ostrava, Czech Republic
 #
 # This program is free software: you can redistribute it and/or modify
@@ -16,6 +16,17 @@
 #
 
 class Retrieve:
+    """
+    Class for downloading observations from Sentinel Hub
+        (https://www.sentinel-hub.com/).
+
+    :param starttime: Starting time of the time series to retrieve
+    :type starttime: datetime.datetime
+    :param endtime: End time of the time series to retrieve
+    :type endtime: datetime.datetime
+    :param aoi: Area of Interest (path to shape file)
+    :type aoi: str
+    """
     def __init__(self, starttime, endtime, aoi, shconfig):
         self.starttime = starttime
         self.endtime = endtime
@@ -25,7 +36,8 @@ class Retrieve:
 
     def _get_intervall(self):
         """
-            Returns monthly intervals to the provided time range
+        Returns monthly intervals to the provided time range:
+            :param starttime: - :param endtime:
         """
         from dateutil.relativedelta import relativedelta
         interval_list = []
@@ -43,9 +55,9 @@ class Retrieve:
 
     def _get_bbox(self):
         """
-            Return the bounding box defined by the shapefile (i.e. AoI)
+        Return the bounding box defined by the Area of Interest
 
-            Note: Only the first polygon in the shapefile will be used!
+        Note: Only the first polygon in the shapefile will be used!
         """
         import geopandas as gpd
         from sentinelhub import geometry
@@ -62,6 +74,11 @@ class Retrieve:
                    eopatches_clm_dir,
                    eopatches_out_dir,
                    eopatches_fail_dir):
+        """
+        Create the final EOPatchs by merging the cloud mask and
+        observations. Empty (i.e., fully masked) observations are
+        moved to :param eopatches_fail_dir:.
+        """
         import os
         import numpy as np
         from eolearn.core import EONode, LoadTask, SaveTask, ZipFeatureTask,   \
@@ -151,6 +168,10 @@ class Retrieve:
                           eopatches_tmp_dir,
                           eopatches_out_dir,
                           eopatches_fail_dir):
+        """
+        Empty (i.e., fully masked) observations are moved to
+        :param eopatches_fail_dir:.
+        """
         import os
         import shutil
         import numpy as np
@@ -176,6 +197,20 @@ class Retrieve:
 
 
     def get_images(self, datacollection, dst_path, maxcc=1.0):
+        """
+        Download the observations for the specified remote sensing type
+        ``datacollection`` and maximum cloud coverage ``maxcc`` (if applicable).
+        The observations are stored on the filesystem at ``dst_path``.
+
+        :param datacollection: Data collection to download
+        :type datacollection: sentinelhub.DataCollection
+        :param dst_path: Path on filesystem to store observations at
+        :type dst_path: str
+        :param maxcc: Maximum cloud coverage (default = ``1.0``)
+        :type maxcc: float
+        :return: Number of retrieved observations
+        :rtype: int
+        """
         import os
         import sys
         import shutil
@@ -375,15 +410,43 @@ class Retrieve:
 
 
 class Convert:
+    """
+    Class for converting GeoTIFF files to EOPatches.
+
+    :param dst_path: Path on filesystem to store the converted observations at
+    :type dst_path: str
+    :param aoi: Area of Interest (path to shape file)
+    :type aoi: str
+    :param normalize: Divisor to use for normalization
+      (e.g., 255.0 for 8 bit unsigned integer types)
+    :type normalize: float
+    """
     def __init__(self,
                  dst_path,
                  aoi,
-                 normalize = 255):
+                 normalize = 255.0):
         self.dst_path = dst_path
         self.aoi = aoi
         self.normalize = normalize
 
     def process(self, root_path, bands_tiff, mask_tiff, timestamp):
+        """
+        Start the conversion process. Merge the GeoTIFF with the bands
+        ``bands_tiff`` and the GeoTIFF containing a mask ``mask_tiff``
+        from the same directory ``root_path``. Annotate the result with a
+        timestamp ``timestmap`` and store it as a single EOPatch.
+
+        :param root_path: Root directory of all GeoTIFF files
+        :type root_path: str
+        :param bands_tiff: Filename of the GeoTIFF containing the bands
+        :type bands_tiff: str
+        :param mask_tiff: Filename of the GeoTIFF containing the mask
+        :type mask_tiff: str
+        :param timestamp: Timestamp of the converted observation
+        :type timestamp: datetime.datetime
+        :return: EOPatch object
+        :rtype: eolearn.core.EOPatch
+        """
         import numpy as np
         import eolearn.io
         import geopandas as gpd
@@ -454,12 +517,72 @@ class Convert:
 
 from enum import Enum
 class RS_Type(Enum):
+    """
+    Indicate the remote sensing type.
+    """
     UNKOWN = -1
+    """
+    Unspecified type
+    """
     OPT = 0
+    """
+    Optical multispectral type
+    """
     SAR_ASC = 1
+    """
+    Synthetic Aperture Radar (SAR) in ascending orbit direction
+    """
     SAR_DSC = 2
+    """
+    Synthetic Aperture Radar (SAR) in descending orbit direction
+    """
 
 class Stack:
+    """
+    Class for stacking, assembling and tiling. The stacking is independent of
+    each observation type. Assembling combines all observations over time, of
+    types optical multispectral, and Synthetic Aperture Radar (SAR) in
+    ascending and descending orbit directions.
+
+    Note: Even though the ``starttime`` might be later, earlier observations
+    are still considered for stacking. That is, earlier observation pixels are
+    carried forward if masked at ``starttime``. However, only observation time
+    stamps are effectively written, that are within the time frame of
+    ``starttime`` and ``endtime``.
+
+    :param sar_asc_path: Directory of SAR observations (ascending)
+    :type sar_asc_path: str
+    :param sar_dsc_path: Directory of SAR observations (descending)
+    :type sar_dsc_path: str
+    :param opt_path: Directory of optical multispectral observations
+    :type opt_path: str
+    :param sar_bands_name: Name of the SAR bands
+    :type sar_bands_name: str
+    :param sar_mask_name: Name of the SAR mask
+    :type sar_mask_name: str
+    :param opt_bands_name: Name of the optical multispectral bands
+    :type opt_bands_name: str
+    :param opt_mask_name: Name of the optical multispectral mask
+    :type opt_mask_name: str
+    :param tf_record_path: Tensorflow Record path to store results
+    :type tf_record_path: str
+    :param starttime: Starting time of the time series to consider
+    :type starttime: datetime.datetime
+    :param endtime: End time of the time series to rconsider
+    :type endtime: datetime.datetime
+    :param delta_step: The step value to avoid redundant observations
+        temporally close together
+    :type delta_step: int
+    :param tile_size_x: Tile size in ``x`` dimension
+    :type tile_size_x: int
+    :param tile_size_y: Tile size in ``y`` dimension
+    :type tile_size_y: int
+    :param bands_sar: Number of SAR bands for each orbit direction
+        (:math:`b_{SAR}^{[asc\mid dsc]}`)
+    :type bands_sar: int
+    :param bands_opt: Number of optical multispectral bands (:math:`b_{OPT}`)
+    :type bands_opt: int
+    """
     def __init__(self,
                  sar_asc_path,
                  sar_dsc_path,
@@ -474,8 +597,8 @@ class Stack:
                  delta_step,
                  tile_size_x,
                  tile_size_y,
-                 bands_opt,
-                 bands_sar):
+                 bands_sar,
+                 bands_opt):
         self.sar_asc_path = sar_asc_path
         self.sar_dsc_path = sar_dsc_path
         self.opt_path = opt_path
@@ -489,8 +612,8 @@ class Stack:
         self.delta_step = delta_step
         self.tile_size_x = tile_size_x
         self.tile_size_y = tile_size_y
-        self.bands_opt = bands_opt
         self.bands_sar = bands_sar
+        self.bands_opt = bands_opt
 
 
     def _getEOPatches(self, path_root):
@@ -794,6 +917,11 @@ class Stack:
 
 
     def process(self):
+        """
+        Start the stacking, assembling and tiling process.
+
+        :rtype: None
+        """
         import tensorflow as tf
 
         all_files_OPT = self._getEOPatches(self.opt_path)
@@ -865,17 +993,51 @@ class Stack:
 
 
 class Window:
+    """
+    Class for windowing the time series of observations.
+
+    :param tf_record_path: Path to stacked TFRecord files
+    :type tf_record_path: str
+    :param tf_record_out_path: Output path to windowed TFRecord files
+    :type tf_record_out_path: str
+    :param delta_size: Window size in seconds (:math:`\\Delta`)
+    :type delta_size: int
+    :param window_stride: Stride of window (:math:`\\rho`)
+    :type window_stride: int
+    :param omega: Minimum window size in number of observations (:math:`\\omega`)
+    :type omega: int
+    :param Omega: Maximum window size in number of observations (:math:`\\Omega`)
+    :type Omega: int
+    :param tile_size_x: Tile size in ``x`` dimension
+    :type tile_size_x: int
+    :param tile_size_y: Tile size in ``y`` dimension
+    :type tile_size_y: int
+    :param bands_sar: Number of SAR bands for each orbit direction
+        (:math:`b_{SAR}^{[asc\mid dsc]}`)
+    :type bands_sar: int
+    :param bands_opt: Number of optical multispectral bands (:math:`b_{OPT}`)
+    :type bands_opt: int
+    :param generate_triple: Indicate whether a window triplet should be
+        generated or just a single window
+    :type generate_triple: boolean
+    :param n_threads: Number of threads to use for concurrent processing
+        (default = ``1``)
+    :type n_threads: int
+    :param use_new_save: Whether to use ``tf.data.Dataset.save(...)`` from
+        Tensorflow if ``true``. If ``flase`` (default) create TFRecord files.
+    :type use_new_save: boolean
+    """
     def __init__(self,
                  tf_record_path,
                  tf_record_out_path,
                  delta_size,
-                 window_shift,
+                 window_stride,
                  omega,
                  Omega,
                  tile_size_x,
                  tile_size_y,
-                 bands_opt,
                  bands_sar,
+                 bands_opt,
                  generate_triple,
                  n_threads = 1,
                  use_new_save = False):
@@ -886,11 +1048,11 @@ class Window:
         self.delta_size = delta_size
         self.tile_size_x = tile_size_x
         self.tile_size_y = tile_size_y
-        self.window_shift = window_shift
+        self.window_stride = window_stride
         self.omega = omega
         self.Omega = Omega
-        self.bands_opt = bands_opt
         self.bands_sar = bands_sar
+        self.bands_opt = bands_opt
         self.generate_triple = generate_triple
         self.n_threads = n_threads
         self.use_new_save = use_new_save
@@ -1123,14 +1285,14 @@ class Window:
             prev_window_ds = tmp_dataset.concatenate(
                 input_ds.window(
                             self.Omega,
-                            shift=self.window_shift,
+                            shift=self.window_stride,
                             stride=1)                                          \
                     .flat_map(self._get_window))
 
             # Construct current and next windows
             cur_next_window_ds = input_ds.window(
                                     self.Omega*2,
-                                    shift=self.window_shift,
+                                    shift=self.window_stride,
                                     stride=1)                                  \
                     .flat_map(self._get_window2)
 
@@ -1145,7 +1307,7 @@ class Window:
         else: # self.generate_triple == False
             cur_window_ds = input_ds.window(
                                     self.Omega,
-                                    shift=self.window_shift,
+                                    shift=self.window_stride,
                                     stride=1)                                  \
                     .flat_map(self._get_window2)
             comb_dataset = cur_window_ds.apply(self._trunc_windows_for_mono)
@@ -1157,6 +1319,19 @@ class Window:
 
 
     def windows_list(self):
+        """
+        Retrieve the list of windows without constructing them.
+
+        :return: Returns a list of window descriptors
+        :rtype: Each window is described as a quadruple
+            ``(id, starttime, enddtime, no_obs)``:
+
+                - ``id``: ID of the window (zero based, sequential enumeration)
+                - ``starttime``: Time stamp of first observation in window
+                - ``endtime``: Time stamp of last observation in window
+                - ``no_obs``: Number of observations in window
+
+        """
         import datetime
         import tensorflow as tf
 
@@ -1230,6 +1405,16 @@ class Window:
 
 
     def get_num_tiles(self):
+        """
+        Get the number of y-x tiles. It assumes that no gap of tiles exist.
+
+        Note: Omitting tiles is possible. This function only takes the maximum
+        y-x tile coordinates. In further processing a selector can be used to
+        filter non-available tiles.
+
+        :return: Returns a tuple ``(y, x)``
+        :rtype: Tuple of ``(int, int)``
+       """
         import os
         import re
 
@@ -1346,6 +1531,25 @@ class Window:
                        win_filter=None,
                        label_args_ds=None,
                        gen_label=None):
+        """
+        Write the windows as TFRecord files (one for each tile).
+
+        :param dst_dir: Path to destination where to store the TFRecord files
+        :type dst_dir: str
+        :param selector: Functor to query which tile should be written
+        :type slector: selector(y, x) -> boolean
+        :param win_filter: Filter for windows (default = ``None``)
+        :type win_filter: tf.data.Dataset.filter predicate
+        :param label_args_ds: Arguments for labeling (default = ``None``). The
+            sequence has to be identical to the samples.
+        :type label_args_ds: tf.data.Dataset
+        :param gen_label: Functor to generate the labels (default = ``None``).
+            Training data is provided by ``data``, the label arguments via
+            ``label_args``. The output is a label in spatial ``y`` and ``x``.
+            dimension.
+        :type gen_label: gen_label(data, label_args) -> [y, x]
+        :return: None
+       """
         import os
         import datetime
         import tensorflow as tf
@@ -1416,6 +1620,16 @@ class Window:
 
 
     def get_infer_dataset(self, tile, win_filter=None):
+        """
+        Return a dataset for inference.
+
+        :param tile: Tile coordinates in ``y`` and ``x`` dimensions
+        :type tile: [y, x]
+        :param win_filter: Filter for windows (default = ``None``)
+        :type win_filter: tf.data.Dataset.filter predicate
+        :return: If tile exists, return the dataset, otherwise ``None``
+        :rtype: ``tf.data.Dataset`` | ``None``
+       """
         import os
         import datetime
         import tensorflow as tf
