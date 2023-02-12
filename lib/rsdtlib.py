@@ -515,28 +515,6 @@ class Convert:
         return result
 
 
-from enum import Enum
-class RS_Type(Enum):
-    """
-    Indicate the remote sensing type.
-    """
-    UNKOWN = -1
-    """
-    Unspecified type
-    """
-    OPT = 0
-    """
-    Optical multispectral type
-    """
-    SAR_ASC = 1
-    """
-    Synthetic Aperture Radar (SAR) in ascending orbit direction
-    """
-    SAR_DSC = 2
-    """
-    Synthetic Aperture Radar (SAR) in descending orbit direction
-    """
-
 class Stack:
     """
     Class for stacking, assembling and tiling. The stacking is independent of
@@ -583,6 +561,8 @@ class Stack:
     :param bands_opt: Number of optical multispectral bands (:math:`b_{OPT}`)
     :type bands_opt: int
     """
+    from enum import Enum as _Enum
+
     def __init__(self,
                  sar_asc_path,
                  sar_dsc_path,
@@ -614,6 +594,13 @@ class Stack:
         self.tile_size_y = tile_size_y
         self.bands_sar = bands_sar
         self.bands_opt = bands_opt
+
+
+    class _RS_Type(_Enum):
+        UNKOWN = -1
+        OPT = 0
+        SAR_ASC = 1
+        SAR_DSC = 2
 
 
     def _getEOPatches(self, path_root):
@@ -806,7 +793,7 @@ class Stack:
             new_sar_dsc = False
             new_opt = False
             for item in timestep[1]: # Expected is one item due to no collisions
-                if item[0] == RS_Type.SAR_ASC:
+                if item[0] == _RS_Type.SAR_ASC:
                     new_patch = EOPatch.load(item[1])
                     new_frame = np.where(                                      \
                         new_patch.mask[self.sar_mask_name]                     \
@@ -821,7 +808,7 @@ class Stack:
                                                 0:self.bands_sar])
                     prev_frame_SAR_ascending = new_frame
                     new_sar_asc = True
-                elif item[0] == RS_Type.SAR_DSC:
+                elif item[0] == _RS_Type.SAR_DSC:
                     new_patch = EOPatch.load(item[1])
                     new_frame = np.where(
                         new_patch.mask[self.sar_mask_name]                     \
@@ -836,7 +823,7 @@ class Stack:
                                                  0:self.bands_sar])
                     prev_frame_SAR_descending = new_frame
                     new_sar_dsc = True
-                elif item[0] == RS_Type.OPT:
+                elif item[0] == _RS_Type.OPT:
                     new_patch = EOPatch.load(item[1])
                     new_frame = np.where(
                         new_patch.mask[self.opt_mask_name]                     \
@@ -942,10 +929,12 @@ class Stack:
         for typ in all_files_OPT +                                             \
                    all_files_SAR_ascending +                                   \
                    all_files_SAR_descending:
-            this_type = RS_Type.OPT if typ in all_files_OPT else               \
-                        RS_Type.SAR_ASC if typ in all_files_SAR_ascending else \
-                        RS_Type.SAR_DSC if typ in all_files_SAR_descending else\
-                        RS_Type.UNKOWN
+            this_type = _RS_Type.OPT if typ in all_files_OPT else              \
+                        _RS_Type.SAR_ASC if typ in                             \
+                                                all_files_SAR_ascending else   \
+                        _RS_Type.SAR_DSC if typ in                             \
+                                                all_files_SAR_descending else  \
+                        _RS_Type.UNKOWN
 
             match_idx = [idx for idx, x in enumerate(list_time_stamps)         \
                          if x[0] == typ[0]]
