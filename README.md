@@ -15,6 +15,9 @@ The processing in stages 2 and 3 is detailed below, showing how observations are
   <img src="./images/temporal_stacking_windowing.png" />
 </p>
 
+# Documentation
+The documentation is hosted on Github Pages [here](https://it4innovations.github.io/rsdtlib/_build/html/index.html).
+
 # Example
 All examples are in folder [examples](./examples). These examples, as shown below, demonstrate each stage.
 *Note:* Except for the download stage, all examples can be executed directly. For the download stage, the credentials for `Sentinel Hub` need to be added to the script to work.
