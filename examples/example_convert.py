@@ -15,9 +15,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 import os
-from dateutil.parser import isoparse
-from sentinelhub import SHConfig
-from sentinelhub import DataCollection
 import sys
 sys.path.append("../lib/")
 import rsdtlib
