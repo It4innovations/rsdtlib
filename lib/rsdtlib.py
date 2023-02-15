@@ -17,8 +17,8 @@
 
 class Retrieve:
     """
-    Class for downloading observations from Sentinel Hub
-        (https://www.sentinel-hub.com/).
+    Class for downloading observations from `Sentinel Hub`
+    (https://www.sentinel-hub.com/).
 
     :param starttime: Starting time of the time series to retrieve
     :type starttime: datetime.datetime
@@ -26,6 +26,36 @@ class Retrieve:
     :type endtime: datetime.datetime
     :param aoi: Area of Interest (path to shape file)
     :type aoi: str
+
+    **Example:**
+
+    Define a download of observations in the time frame 01-01-2017 to 01-07-2017
+    from `Sentinel Hub` for the Area of Interest (AoI) defined in the shape file
+    ``ostrava.shp``. An account on Sentinel Hub is required for which the
+    ``shconfig`` provides the access credentials.
+
+    .. code-block:: python
+
+        import rsdtlib
+        from dateutil.parser import isoparse
+        from sentinelhub import SHConfig
+
+        # Credentials to access Sentinel Hub. See instructions:
+        # https://github.com/sentinel-hub/eo-learn/blob/master/examples/README.md
+        shconfig = SHConfig()
+        shconfig.instance_id = "<YOUR INSTANCE ID>"
+        shconfig.sh_client_id = "<YOUR CLIENT ID>"
+        shconfig.sh_client_secret = "<YOUR CLIENT SECRET>"
+
+        # Just a small area in Ostrava/CZ
+        my_aoi = "./ostrava.shp"
+
+        retrieve = rsdtlib.Retrieve(
+                        starttime=isoparse("20170101T000000"),
+                        endtime=isoparse("20170701T000000"),
+                        aoi=my_aoi,
+                        shconfig=shconfig)
+
     """
     def __init__(self, starttime, endtime, aoi, shconfig):
         self.starttime = starttime
@@ -203,13 +233,33 @@ class Retrieve:
         The observations are stored on the filesystem at ``dst_path``.
 
         :param datacollection: Data collection to download
-        :type datacollection: sentinelhub.DataCollection
+        :type datacollection: sentinelhub.DataCollection_
         :param dst_path: Path on filesystem to store observations at
         :type dst_path: str
         :param maxcc: Maximum cloud coverage (default = ``1.0``)
         :type maxcc: float
         :return: Number of retrieved observations
         :rtype: int
+
+        .. _sentinelhub.DataCollection: https://sentinelhub-py.readthedocs.io/en/latest/examples/data_collections.html
+
+        **Example:**
+
+        Start the download of the AoI and time frame specified in the object
+        `retrieve`. `Sentinel Hub`'s data collection ``SENTINEL1_IW_ASC``
+        is specified to retrieve Sentinel 1 observations in ascending orbit
+        direction. The retrieved observations are stored in path ``dst_s1_asc``.
+
+        .. code-block:: python
+
+            from sentinelhub import DataCollection
+
+            dst_s1_asc = "<PATH FOR OBSERVATIONS>"
+
+            num_down = retrieve.get_images(
+                                datacollection=DataCollection.SENTINEL1_IW_ASC,
+                                dst_path=dst_s1_asc)
+
         """
         import os
         import sys
@@ -420,6 +470,26 @@ class Convert:
     :param normalize: Divisor to use for normalization
       (e.g., 255.0 for 8 bit unsigned integer types)
     :type normalize: float
+
+    **Example:**
+
+    Define a conversion of observations for the Area of Interest (AoI) defined
+    in the shape file ``ostrava.shp``. The converted observations are stored in
+    in path ``dst_path``.
+
+    .. code-block:: python
+
+        import rsdtlib
+
+        dst_path = "<PATH FOR OBSERVATIONS>"
+
+        # Just a small area in Ostrava/CZ
+        my_aoi = "./ostrava.shp"
+
+        convert = rsdtlib.Convert(
+                        dst_path=dst_path,
+                        aoi=my_aoi)
+
     """
     def __init__(self,
                  dst_path,
@@ -446,6 +516,25 @@ class Convert:
         :type timestamp: datetime.datetime
         :return: EOPatch object
         :rtype: eolearn.core.EOPatch
+
+        **Example:**
+
+        Convert observations as specified in the object ``convert``. This is
+        called for every single observation provided as two `GeoTIFF` files from
+        the ``root_path``. One contains the contents (``bands_tiff``) and one
+        the data mask (``mask_tiff``). A timestamp is assigned via
+        ``timestamp``.
+
+        .. code-block:: python
+
+            root_path = "<ROOT OF GEOTIFFS>"
+
+            sample = convert.process(
+                        root_path=root_path
+                        bands_tiff="19931010T090051.TIF",   # LS5 TM 7 bands
+                        mask_tiff="19931010T090051_QA.TIF", # LS5 TM QA band
+                        timestamp="19931010T090051")
+
         """
         import numpy as np
         import eolearn.io
@@ -1285,7 +1374,7 @@ class Window:
                                     stride=1)                                  \
                     .flat_map(self._get_window2)
 
-            # Concatenate both together and filter for timeframes of delta_size
+            # Concatenate both together and filter for time frames of delta_size
             comb_dataset = tf.data.Dataset.zip((prev_window_ds,
                                                 cur_next_window_ds))
             comb_dataset = comb_dataset.apply(self._trunc_windows_for_triple)

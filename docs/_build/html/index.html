@@ -146,6 +146,22 @@
 </ul>
 </dd>
 </dl>
+<p><strong>Example:</strong></p>
+<p>Define a conversion of observations for the Area of Interest (AoI) defined
+in the shape file <code class="docutils literal notranslate"><span class="pre">ostrava.shp</span></code>. The converted observations are stored in
+in path <code class="docutils literal notranslate"><span class="pre">dst_path</span></code>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">rsdtlib</span>
+
+<span class="n">dst_path</span> <span class="o">=</span> <span class="s2">&quot;&lt;PATH FOR OBSERVATIONS&gt;&quot;</span>
+
+<span class="c1"># Just a small area in Ostrava/CZ</span>
+<span class="n">my_aoi</span> <span class="o">=</span> <span class="s2">&quot;./ostrava.shp&quot;</span>
+
+<span class="n">convert</span> <span class="o">=</span> <span class="n">rsdtlib</span><span class="o">.</span><span class="n">Convert</span><span class="p">(</span>
+                <span class="n">dst_path</span><span class="o">=</span><span class="n">dst_path</span><span class="p">,</span>
+                <span class="n">aoi</span><span class="o">=</span><span class="n">my_aoi</span><span class="p">)</span>
+</pre></div>
+</div>
 <dl class="py method">
 <dt class="sig sig-object py" id="rsdtlib.Convert.process">
 <span class="sig-name descname"><span class="pre">process</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">root_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bands_tiff</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask_tiff</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timestamp</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rsdtlib.Convert.process" title="Permalink to this definition"></a></dt>
@@ -169,6 +185,21 @@ timestamp <code class="docutils literal notranslate"><span class="pre">timestmap
 <dd class="field-odd"><p>eolearn.core.EOPatch</p>
 </dd>
 </dl>
+<p><strong>Example:</strong></p>
+<p>Convert observations as specified in the object <code class="docutils literal notranslate"><span class="pre">convert</span></code>. This is
+called for every single observation provided as two <cite>GeoTIFF</cite> files from
+the <code class="docutils literal notranslate"><span class="pre">root_path</span></code>. One contains the contents (<code class="docutils literal notranslate"><span class="pre">bands_tiff</span></code>) and one
+the data mask (<code class="docutils literal notranslate"><span class="pre">mask_tiff</span></code>). A timestamp is assigned via
+<code class="docutils literal notranslate"><span class="pre">timestamp</span></code>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">root_path</span> <span class="o">=</span> <span class="s2">&quot;&lt;ROOT OF GEOTIFFS&gt;&quot;</span>
+
+<span class="n">sample</span> <span class="o">=</span> <span class="n">convert</span><span class="o">.</span><span class="n">process</span><span class="p">(</span>
+            <span class="n">root_path</span><span class="o">=</span><span class="n">root_path</span>
+            <span class="n">bands_tiff</span><span class="o">=</span><span class="s2">&quot;19931010T090051.TIF&quot;</span><span class="p">,</span>   <span class="c1"># LS5 TM 7 bands</span>
+            <span class="n">mask_tiff</span><span class="o">=</span><span class="s2">&quot;19931010T090051_QA.TIF&quot;</span><span class="p">,</span> <span class="c1"># LS5 TM QA band</span>
+            <span class="n">timestamp</span><span class="o">=</span><span class="s2">&quot;19931010T090051&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </dd></dl>
@@ -176,10 +207,8 @@ timestamp <code class="docutils literal notranslate"><span class="pre">timestmap
 <dl class="py class">
 <dt class="sig sig-object py" id="rsdtlib.Retrieve">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rsdtlib.</span></span><span class="sig-name descname"><span class="pre">Retrieve</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">starttime</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">endtime</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aoi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shconfig</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rsdtlib.Retrieve" title="Permalink to this definition"></a></dt>
-<dd><dl class="simple">
-<dt>Class for downloading observations from Sentinel Hub</dt><dd><p>(<a class="reference external" href="https://www.sentinel-hub.com/">https://www.sentinel-hub.com/</a>).</p>
-</dd>
-</dl>
+<dd><p>Class for downloading observations from <cite>Sentinel Hub</cite>
+(<a class="reference external" href="https://www.sentinel-hub.com/">https://www.sentinel-hub.com/</a>).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -189,6 +218,32 @@ timestamp <code class="docutils literal notranslate"><span class="pre">timestmap
 </ul>
 </dd>
 </dl>
+<p><strong>Example:</strong></p>
+<p>Define a download of observations in the time frame 01-01-2017 to 01-07-2017
+from <cite>Sentinel Hub</cite> for the Area of Interest (AoI) defined in the shape file
+<code class="docutils literal notranslate"><span class="pre">ostrava.shp</span></code>. An account on Sentinel Hub is required for which the
+<code class="docutils literal notranslate"><span class="pre">shconfig</span></code> provides the access credentials.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">rsdtlib</span>
+<span class="kn">from</span> <span class="nn">dateutil.parser</span> <span class="kn">import</span> <span class="n">isoparse</span>
+<span class="kn">from</span> <span class="nn">sentinelhub</span> <span class="kn">import</span> <span class="n">SHConfig</span>
+
+<span class="c1"># Credentials to access Sentinel Hub. See instructions:</span>
+<span class="c1"># https://github.com/sentinel-hub/eo-learn/blob/master/examples/README.md</span>
+<span class="n">shconfig</span> <span class="o">=</span> <span class="n">SHConfig</span><span class="p">()</span>
+<span class="n">shconfig</span><span class="o">.</span><span class="n">instance_id</span> <span class="o">=</span> <span class="s2">&quot;&lt;YOUR INSTANCE ID&gt;&quot;</span>
+<span class="n">shconfig</span><span class="o">.</span><span class="n">sh_client_id</span> <span class="o">=</span> <span class="s2">&quot;&lt;YOUR CLIENT ID&gt;&quot;</span>
+<span class="n">shconfig</span><span class="o">.</span><span class="n">sh_client_secret</span> <span class="o">=</span> <span class="s2">&quot;&lt;YOUR CLIENT SECRET&gt;&quot;</span>
+
+<span class="c1"># Just a small area in Ostrava/CZ</span>
+<span class="n">my_aoi</span> <span class="o">=</span> <span class="s2">&quot;./ostrava.shp&quot;</span>
+
+<span class="n">retrieve</span> <span class="o">=</span> <span class="n">rsdtlib</span><span class="o">.</span><span class="n">Retrieve</span><span class="p">(</span>
+                <span class="n">starttime</span><span class="o">=</span><span class="n">isoparse</span><span class="p">(</span><span class="s2">&quot;20170101T000000&quot;</span><span class="p">),</span>
+                <span class="n">endtime</span><span class="o">=</span><span class="n">isoparse</span><span class="p">(</span><span class="s2">&quot;20170701T000000&quot;</span><span class="p">),</span>
+                <span class="n">aoi</span><span class="o">=</span><span class="n">my_aoi</span><span class="p">,</span>
+                <span class="n">shconfig</span><span class="o">=</span><span class="n">shconfig</span><span class="p">)</span>
+</pre></div>
+</div>
 <dl class="py method">
 <dt class="sig sig-object py" id="rsdtlib.Retrieve.get_images">
 <span class="sig-name descname"><span class="pre">get_images</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">datacollection</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dst_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxcc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rsdtlib.Retrieve.get_images" title="Permalink to this definition"></a></dt>
@@ -198,7 +253,7 @@ The observations are stored on the filesystem at <code class="docutils literal n
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>datacollection</strong> (<em>sentinelhub.DataCollection</em>) – Data collection to download</p></li>
+<li><p><strong>datacollection</strong> (<a class="reference external" href="https://sentinelhub-py.readthedocs.io/en/latest/examples/data_collections.html">sentinelhub.DataCollection</a>) – Data collection to download</p></li>
 <li><p><strong>dst_path</strong> (<em>str</em>) – Path on filesystem to store observations at</p></li>
 <li><p><strong>maxcc</strong> (<em>float</em>) – Maximum cloud coverage (default = <code class="docutils literal notranslate"><span class="pre">1.0</span></code>)</p></li>
 </ul>
@@ -210,6 +265,20 @@ The observations are stored on the filesystem at <code class="docutils literal n
 <dd class="field-odd"><p>int</p>
 </dd>
 </dl>
+<p><strong>Example:</strong></p>
+<p>Start the download of the AoI and time frame specified in the object
+<cite>retrieve</cite>. <cite>Sentinel Hub</cite>’s data collection <code class="docutils literal notranslate"><span class="pre">SENTINEL1_IW_ASC</span></code>
+is specified to retrieve Sentinel 1 observations in ascending orbit
+direction. The retrieved observations are stored in path <code class="docutils literal notranslate"><span class="pre">dst_s1_asc</span></code>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sentinelhub</span> <span class="kn">import</span> <span class="n">DataCollection</span>
+
+<span class="n">dst_s1_asc</span> <span class="o">=</span> <span class="s2">&quot;&lt;PATH FOR OBSERVATIONS&gt;&quot;</span>
+
+<span class="n">num_down</span> <span class="o">=</span> <span class="n">retrieve</span><span class="o">.</span><span class="n">get_images</span><span class="p">(</span>
+                    <span class="n">datacollection</span><span class="o">=</span><span class="n">DataCollection</span><span class="o">.</span><span class="n">SENTINEL1_IW_ASC</span><span class="p">,</span>
+                    <span class="n">dst_path</span><span class="o">=</span><span class="n">dst_s1_asc</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </dd></dl>
