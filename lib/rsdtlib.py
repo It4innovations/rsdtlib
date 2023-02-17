@@ -637,8 +637,8 @@ class Stack:
     :type starttime: datetime.datetime
     :param endtime: End time of the time series to rconsider
     :type endtime: datetime.datetime
-    :param delta_step: The step value to avoid redundant observations
-        temporally close together
+    :param delta_step: The step value (:math:`\delta`) to avoid redundant
+        observations temporally close together
     :type delta_step: int
     :param tile_size_x: Tile size in ``x`` dimension
     :type tile_size_x: int
@@ -649,6 +649,46 @@ class Stack:
     :type bands_sar: int
     :param bands_opt: Number of optical multispectral bands (:math:`b_{OPT}`)
     :type bands_opt: int
+
+    **Example:**
+
+    Define the stacking, assembling, and tiling with different parameters.
+    Observations are taken from ``sar_asc_path``/``sar_dsc_path`` for SAR data,
+    and ``opt_path`` for optical multispectral data. The SAR and optical bands
+    ("L1_GND" and "L1C_data"), and their masks ("dataMask" each) are
+    explicitly specified. The timeframe to consider for stacking is 01-01-2017
+    till 01-07-2017. The step value :math:`\delta` is set to two days, and
+    ``y`` and ``x`` sizes of the tiles to 32 pixels each. The number of bands
+    :math:`b_{SAR}^{[asc\mid dsc]}` is two (for each oribt direction), and
+    :math:`b_{OPT}` is 13.
+
+    .. code-block:: python
+
+        import rsdtlib
+        from datetime import datetime
+
+        sar_asc_path = "<SOURCE PATH OF S1 ASC OBSERVATIONS>"
+        sar_dsc_path = "<SOURCE PATH OF S1 DSC OBSERVATIONS>"
+        opt_path = "<SOURCE PATH OF S2 OBSERVATIONS>"
+        tf_record_path = "<DESTINATION PATH OF TFRECORD FILES>"
+
+        stack = rsdtlib.Stack(
+                        sar_asc_path,
+                        sar_dsc_path,
+                        opt_path,
+                        "L1_GND",
+                        "dataMask",
+                        "L1C_data",
+                        "dataMask",
+                        tf_record_path,
+                        datetime(2017, 1, 1, 0, 0, 0),
+                        datetime(2017, 7, 1, 0, 0, 0),
+                        60*60*24*2,   # every two days
+                        32,           # tile size x
+                        32,           # tile size y
+                        2,            # bands SAR
+                        13)           # bands opt
+
     """
     from enum import Enum as _Enum
 
@@ -997,6 +1037,17 @@ class Stack:
         Start the stacking, assembling and tiling process.
 
         :rtype: None
+
+        **Example:**
+
+        Start the stacking, assembling, and tiling process as defined by
+        the object ``stack``. This will require significant compute resources
+        depending on the amount of stacked observations.
+
+        .. code-block:: python
+
+            stack.process()
+
         """
         import tensorflow as tf
 

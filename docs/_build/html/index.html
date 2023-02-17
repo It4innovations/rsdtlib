@@ -308,8 +308,8 @@ stamps are effectively written, that are within the time frame of
 <li><p><strong>tf_record_path</strong> (<em>str</em>) – Tensorflow Record path to store results</p></li>
 <li><p><strong>starttime</strong> (<em>datetime.datetime</em>) – Starting time of the time series to consider</p></li>
 <li><p><strong>endtime</strong> (<em>datetime.datetime</em>) – End time of the time series to rconsider</p></li>
-<li><p><strong>delta_step</strong> (<em>int</em>) – The step value to avoid redundant observations
-temporally close together</p></li>
+<li><p><strong>delta_step</strong> (<em>int</em>) – The step value (<span class="math notranslate nohighlight">\(\delta\)</span>) to avoid redundant
+observations temporally close together</p></li>
 <li><p><strong>tile_size_x</strong> (<em>int</em>) – Tile size in <code class="docutils literal notranslate"><span class="pre">x</span></code> dimension</p></li>
 <li><p><strong>tile_size_y</strong> (<em>int</em>) – Tile size in <code class="docutils literal notranslate"><span class="pre">y</span></code> dimension</p></li>
 <li><p><strong>bands_sar</strong> (<em>int</em>) – Number of SAR bands for each orbit direction
@@ -318,6 +318,42 @@ temporally close together</p></li>
 </ul>
 </dd>
 </dl>
+<p><strong>Example:</strong></p>
+<p>Define the stacking, assembling, and tiling with different parameters.
+Observations are taken from <code class="docutils literal notranslate"><span class="pre">sar_asc_path</span></code>/<code class="docutils literal notranslate"><span class="pre">sar_dsc_path</span></code> for SAR data,
+and <code class="docutils literal notranslate"><span class="pre">opt_path</span></code> for optical multispectral data. The SAR and optical bands
+(“L1_GND” and “L1C_data”), and their masks (“dataMask” each) are
+explicitly specified. The timeframe to consider for stacking is 01-01-2017
+till 01-07-2017. The step value <span class="math notranslate nohighlight">\(\delta\)</span> is set to two days, and
+<code class="docutils literal notranslate"><span class="pre">y</span></code> and <code class="docutils literal notranslate"><span class="pre">x</span></code> sizes of the tiles to 32 pixels each. The number of bands
+<span class="math notranslate nohighlight">\(b_{SAR}^{[asc\mid dsc]}\)</span> is two (for each oribt direction), and
+<span class="math notranslate nohighlight">\(b_{OPT}\)</span> is 13.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">rsdtlib</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+
+<span class="n">sar_asc_path</span> <span class="o">=</span> <span class="s2">&quot;&lt;SOURCE PATH OF S1 ASC OBSERVATIONS&gt;&quot;</span>
+<span class="n">sar_dsc_path</span> <span class="o">=</span> <span class="s2">&quot;&lt;SOURCE PATH OF S1 DSC OBSERVATIONS&gt;&quot;</span>
+<span class="n">opt_path</span> <span class="o">=</span> <span class="s2">&quot;&lt;SOURCE PATH OF S2 OBSERVATIONS&gt;&quot;</span>
+<span class="n">tf_record_path</span> <span class="o">=</span> <span class="s2">&quot;&lt;DESTINATION PATH OF TFRECORD FILES&gt;&quot;</span>
+
+<span class="n">stack</span> <span class="o">=</span> <span class="n">rsdtlib</span><span class="o">.</span><span class="n">Stack</span><span class="p">(</span>
+                <span class="n">sar_asc_path</span><span class="p">,</span>
+                <span class="n">sar_dsc_path</span><span class="p">,</span>
+                <span class="n">opt_path</span><span class="p">,</span>
+                <span class="s2">&quot;L1_GND&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;dataMask&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;L1C_data&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;dataMask&quot;</span><span class="p">,</span>
+                <span class="n">tf_record_path</span><span class="p">,</span>
+                <span class="n">datetime</span><span class="p">(</span><span class="mi">2017</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+                <span class="n">datetime</span><span class="p">(</span><span class="mi">2017</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+                <span class="mi">60</span><span class="o">*</span><span class="mi">60</span><span class="o">*</span><span class="mi">24</span><span class="o">*</span><span class="mi">2</span><span class="p">,</span>   <span class="c1"># every two days</span>
+                <span class="mi">32</span><span class="p">,</span>           <span class="c1"># tile size x</span>
+                <span class="mi">32</span><span class="p">,</span>           <span class="c1"># tile size y</span>
+                <span class="mi">2</span><span class="p">,</span>            <span class="c1"># bands SAR</span>
+                <span class="mi">13</span><span class="p">)</span>           <span class="c1"># bands opt</span>
+</pre></div>
+</div>
 <dl class="py method">
 <dt class="sig sig-object py" id="rsdtlib.Stack.process">
 <span class="sig-name descname"><span class="pre">process</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rsdtlib.Stack.process" title="Permalink to this definition"></a></dt>
@@ -327,6 +363,13 @@ temporally close together</p></li>
 <dd class="field-odd"><p>None</p>
 </dd>
 </dl>
+<p><strong>Example:</strong></p>
+<p>Start the stacking, assembling, and tiling process as defined by
+the object <code class="docutils literal notranslate"><span class="pre">stack</span></code>. This will require significant compute resources
+depending on the amount of stacked observations.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">stack</span><span class="o">.</span><span class="n">process</span><span class="p">()</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </dd></dl>
