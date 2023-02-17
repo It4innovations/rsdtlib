@@ -23,19 +23,19 @@ import rsdtlib
 
 # Locations where to find the input observations and where to store the stacked,
 # assembled and tiled time series.
-dst_path = "./Limassol/"
-dst_ers12_asc = "{}/ERS12_asc/eopatches/".format(dst_path)
-dst_ers12_dsc = "{}/ERS12_dsc/eopatches/".format(dst_path)
-dst_ls5 = "{}/LS5/eopatches/".format(dst_path)
-tf_record_path = "{}/tf_stack/".format(dst_path)
+root_path = "./Limassol/"
+sar_ers12_asc_path = "{}/ERS12_asc/eopatches/".format(root_path)
+sar_ers12_dsc_path = "{}/ERS12_dsc/eopatches/".format(root_path)
+opt_ls5_path = "{}/LS5/eopatches/".format(root_path)
+tf_record_path = "{}/tf_stack/".format(root_path)
 if not os.path.isdir(tf_record_path):
     os.mkdir(tf_record_path)
 
 # Stack, assemble and tile the observations.
 stack = rsdtlib.Stack(
-                dst_ers12_asc,
-                dst_ers12_dsc,
-                dst_ls5,
+                sar_ers12_asc_path,
+                sar_ers12_dsc_path,
+                opt_ls5_path,
                 "Bands", # L1 GND
                 "Mask",
                 "Bands", # L1 C1
