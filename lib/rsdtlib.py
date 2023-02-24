@@ -1140,8 +1140,6 @@ class Window:
 
     :param tf_record_path: Path to stacked TFRecord files
     :type tf_record_path: str
-    :param tf_record_out_path: Output path to windowed TFRecord files
-    :type tf_record_out_path: str
     :param delta_size: Window size in seconds (:math:`\\Delta`)
     :type delta_size: int
     :param window_stride: Stride of window (:math:`\\rho`)
@@ -1168,10 +1166,41 @@ class Window:
     :param use_new_save: Whether to use ``tf.data.Dataset.save(...)`` from
         Tensorflow if ``true``. If ``flase`` (default) create TFRecord files.
     :type use_new_save: boolean
+
+    **Example:**
+
+    Define the windowing (and optional labeling) with different parameters. This
+    can be run in two modes:
+
+        - Write to disk: `write_tf_files(...)`
+        - Interactive: `get_infer_dataset(...)`
+
+    Irrespective of the modes, the windows are described with the class
+    instantiation. In the example below, the path to the stacked TFRecord files
+    are provided as ``tf_record_path``. The window parameters :math:`\Delta` for
+    the window size in seconds, the window stride :math:`\\rho`, and lower
+    (:math:`\\omega`) and upper bound (:math:`\\Omega`) of number of
+    observations per window are provided here.
+
+    .. code-block:: python
+
+        import rsdtlib
+
+        tf_record_path = "<SOURCE PATH STACKED TFRECORD FILES>"
+
+        window = rsdtlib.Window(
+                      tf_record_path,        # Stacked TFRecord file path
+                      60*60*24*30,           # Delta (size)
+                      1,                     # window stride
+                      10,                    # omega (min. window size)
+                      16,                    # Omega (max. window size)
+                      True,                  # generate triplet
+                      n_threads=n_threads,   # number of threads to use
+                      use_new_save=False)    # new TF Dataset save
+
     """
     def __init__(self,
                  tf_record_path,
-                 tf_record_out_path,
                  delta_size,
                  window_stride,
                  omega,
@@ -1183,7 +1212,6 @@ class Window:
         import json
 
         self.tf_record_path = tf_record_path
-        self.tf_record_out_path = tf_record_out_path
         self.delta_size = delta_size
         self.window_stride = window_stride
         self.omega = omega
@@ -1379,7 +1407,7 @@ class Window:
 
         return tf.data.Dataset.zip((cur_win, ))
 
-    def _annotate_ds(self, sample_file, window_betas=None):
+    def _annotate_ds(self, sample_file):
         import tensorflow as tf
 
         # Workaraound to get rid of warning reg. AUTOGRAPH
@@ -1395,19 +1423,10 @@ class Window:
                             lambda cur_win:                                    \
                             tf.shape(cur_win[0])[0] >= self.omega)
 
-        # Workaraound to get rid of warning reg. AUTOGRAPH
-        filter_rand = tf.autograph.experimental.do_not_convert(
-                            lambda *args:                                      \
-                            tf.random.uniform([],
-                                              0,
-                                              10,
-                                              dtype=tf.dtypes.int32,
-                                              seed=seed) == 0)
-
         input_ds = tf.data.TFRecordDataset(sample_file,
                                          compression_type="GZIP",
                                          num_parallel_reads=1)                 \
-                        .map(self._parse_tfr_element, num_parallel_calls=1)
+                          .map(self._parse_tfr_element, num_parallel_calls=1)
 
         if self.generate_triple:
             # Construct previous window (starting from [] up to [Omega]
@@ -1418,7 +1437,7 @@ class Window:
                                                     dtype=tf.int64))
             tmp_dataset = tf.data.Dataset.zip(
                 (dataset_enum,
-                 input_ds.take(self.Omega)                               \
+                 input_ds.take(self.Omega)                                     \
                     .batch(self.Omega).repeat(self.Omega)))
             tmp_dataset = tmp_dataset.map(lambda x, y: (y[0][0:x],  # Timestamp
                                                         y[1][0:x],  # SAR asc.
@@ -1430,14 +1449,14 @@ class Window:
                             self.Omega,
                             shift=self.window_stride,
                             stride=1)                                          \
-                    .flat_map(self._get_window))
+                        .flat_map(self._get_window))
 
             # Construct current and next windows
             cur_next_window_ds = input_ds.window(
-                                    self.Omega*2,
-                                    shift=self.window_stride,
-                                    stride=1)                                  \
-                    .flat_map(self._get_window2)
+                                            self.Omega*2,
+                                            shift=self.window_stride,
+                                            stride=1)                          \
+                                         .flat_map(self._get_window2)
 
             # Concatenate both together and filter for time frames of delta_size
             comb_dataset = tf.data.Dataset.zip((prev_window_ds,
@@ -1452,7 +1471,7 @@ class Window:
                                     self.Omega,
                                     shift=self.window_stride,
                                     stride=1)                                  \
-                    .flat_map(self._get_window2)
+                    .flat_map(self._get_window)
             comb_dataset = cur_window_ds.apply(self._trunc_windows_for_mono)
 
             # Return only windows that have at least omega observations
@@ -1473,6 +1492,29 @@ class Window:
                 - ``starttime``: Time stamp of first observation in window
                 - ``endtime``: Time stamp of last observation in window
                 - ``no_obs``: Number of observations in window
+
+        **Example:**
+
+        In the example below, the list of windows that are generated are saved
+        to a CSV file.
+
+        .. code-block:: python
+
+            import rsdtlib
+            import csv
+
+            window_list = window.windows_list()
+
+            with open("windows_training.csv", mode = "w") as csv_file:
+                csv_writer = csv.writer(csv_file,
+                                        delimiter=",",
+                                        quotechar="\\"",
+                                        quoting=csv.QUOTE_MINIMAL)
+                for item in window_list:
+                    csv_writer.writerow([item[0],
+                                         datetime.utcfromtimestamp(item[1]),
+                                         datetime.utcfromtimestamp(item[2]),
+                                         item[3]])
 
         """
         import datetime
@@ -1557,6 +1599,18 @@ class Window:
 
         :return: Returns a tuple ``(y, x)``
         :rtype: Tuple of ``(int, int)``
+
+        **Example:**
+
+        In the example below, the amount of tiles in each dimension are
+        returned.
+
+        .. code-block:: python
+
+            import rsdtlib
+
+            num_tiles_y, num_tiles_x = window.get_num_tiles()
+
        """
         import os
         import re
@@ -1669,7 +1723,7 @@ class Window:
 
 
     def write_tf_files(self,
-                       dst_dir,
+                       tf_record_out_path,
                        selector,
                        win_filter=None,
                        label_args_ds=None,
@@ -1677,8 +1731,9 @@ class Window:
         """
         Write the windows as TFRecord files (one for each tile).
 
-        :param dst_dir: Path to destination where to store the TFRecord files
-        :type dst_dir: str
+        :param tf_record_out_path: Path to destination where to store the
+            TFRecord files
+        :type tf_record_out_path: str
         :param selector: Functor to query which tile should be written
         :type slector: selector(y, x) -> boolean
         :param win_filter: Filter for windows (default = ``None``)
@@ -1692,6 +1747,53 @@ class Window:
             dimension.
         :type gen_label: gen_label(data, label_args) -> [y, x]
         :return: None
+
+        **Example:**
+
+        This is the windowing mode to write to disk. In the example below,
+        the path to the windowed TFRecord files are provided as
+        ``tf_record_out_path``. A checkerboard pattern of tiles are windowed.
+        This is useful for separating training and validation/testing data.
+        The ``win_filter`` allows to add additional filters for windows. In the
+        example, randomly every 10th window is saved and the rest is discarded.
+        If labels should be assigned to every window, ``gen_label`` is the
+        generator for these labels. In the example, only labels with values of
+        one are created.
+
+        .. code-block:: python
+
+            import rsdtlib
+            import tensorflow as tf
+
+            tf_record_out_path = "<DESTINAITON PATH OF WINDOWED TFRECORD FILES>"
+
+            selector = lambda j, i: (i + j) % 2 == 0 # checkerboard pattern
+
+            # Randomly select every 10th window only
+            randomize = lambda *args:                                         \\
+                            tf.random.uniform([], 0, 10,
+                                              dtype=tf.dtypes.int32) == 0
+
+            # Generate 32x32 pixel label with only values of one
+            my_label = lambda window, label_args:                             \\
+                  (tf.concat(
+                        # Only serialize current window (index 1)
+                        # Note: We require window triplets are generated!
+                        [
+                         #window[1][0][:],          # timestamps (not used)
+                         window[1][1][:, :, :, :],  # SAR ascending
+                         window[1][2][:, :, :, :],  # SAR descending
+                         window[1][3][:, :, :, :]], # optical
+                        axis=-1),
+                   tf.ensure_shape(                 # label
+                        tf.ones([32, 32]), [32, 32]))
+
+            window.write_tf_files(
+                          tf_record_out_path, # path to write TFRecord files to
+                          selector,
+                          win_filter=randomize,
+                          gen_label=my_label)
+
        """
         import os
         import datetime
@@ -1707,8 +1809,7 @@ class Window:
 
             if label_args_ds is not None:
                 self._write_training_data(
-                                self.tf_record_out_path +                      \
-                                dst_dir +                                      \
+                                tf_record_out_path +                           \
                                 "{}_{}.tfrecords".format(tile[0], tile[1]),    \
                                 windows_ds,                                    \
                                 label_args_ds,                                 \
@@ -1716,8 +1817,7 @@ class Window:
 
             else: # label_args_ds is None
                 self._write_inference_data(
-                                self.tf_record_out_path +                      \
-                                dst_dir +                                      \
+                                tf_record_out_path +                           \
                                 "{}_{}.tfrecords".format(tile[0], tile[1]),    \
                                 windows_ds)
             return 0
@@ -1725,9 +1825,9 @@ class Window:
 
         # Note: If multi-threaded by caller, this test might not work properly.
         #       Hence, we ignore cases where the directory already exists!
-        if not os.path.isdir(self.tf_record_out_path + dst_dir):
+        if not os.path.isdir(tf_record_out_path):
             try:
-                os.mkdir(self.tf_record_out_path + dst_dir)
+                os.mkdir(tf_record_out_path)
             except OSError as e:
                 if e.errno != errno.EEXIST:
                     raise
@@ -1772,6 +1872,32 @@ class Window:
         :type win_filter: tf.data.Dataset.filter predicate
         :return: If tile exists, return the dataset, otherwise ``None``
         :rtype: ``tf.data.Dataset`` | ``None``
+
+        **Example:**
+
+        This is the interactive mode. In the example below, the windows of the
+        tile ``[5, 10]`` are used for inference. The ``win_filter`` allows to
+        add additional filters for windows. In the example, only windows that
+        have their first observation later than 2022-07-01 00:00:00 (GMT) are
+        considered. Note that ``window[0][0]`` denotes the first timestamp.
+        When applying filters, there is no notion of previous, current or next
+        windows (irrespective of the setting of ``generate_triple``).
+
+        .. code-block:: python
+
+            import rsdtlib
+            import tensorflow as tf
+
+            later_than = lambda window: tf.math.greater(
+                                            tf.cast(window[0][0], tf.int64),
+                                            1656626400) # 2022-07-01 00:00:00
+
+            windows_ds = window.get_infer_dataset([5, 10],
+                                                  win_filter=later_than)
+
+            # Use for inference on a loaded Tensorflow/Keras model
+            result = model.predict(windows_ds)
+
        """
         import os
         import datetime

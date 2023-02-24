@@ -32,8 +32,11 @@ n_threads = 4
 dst_path = "./Limassol/"
 tf_record_path = "{}/tf_stack/".format(dst_path)
 tf_record_out_path = "{}/tf_window/".format(dst_path)
-if not os.path.isdir(tf_record_out_path):
-    os.mkdir(tf_record_out_path)
+os.mkdirs(tf_record_out_path, exist_ok=True)
+tf_record_out_path_train = "{}/tf_window/train/".format(dst_path)
+os.mkdirs(tf_record_out_path_train, exist_ok=True)
+tf_record_out_path_val = "{}/tf_window/val/".format(dst_path)
+os.mkdirs(tf_record_out_path_val, exist_ok=True)
 
 tile_size_x = 32
 tile_size_y = 32
@@ -42,7 +45,6 @@ tile_size_y = 32
 # Note: This is not yet processing!
 window = rsdtlib.Window(
                   tf_record_path,
-                  tf_record_out_path,
                   60*60*24*182,          # Delta (size)
                   1,                     # window stride
                   35,                    # omega (min. window size)
@@ -198,7 +200,7 @@ if __name__ == '__main__':
     for j in range(0, num_tiles_y):
         for i in range(0, num_tiles_x):
             if selector(j, i):
-                list_tiles.append(("./train/", (j, i)))
+                list_tiles.append((tf_record_out_path_train, (j, i)))
 
     with multiprocessing.get_context("spawn").Pool(processes=n_threads) as p:
         for i, _ in enumerate(p.imap_unordered(
@@ -217,7 +219,7 @@ if __name__ == '__main__':
     for j in range(0, num_tiles_y):
         for i in range(0, num_tiles_x):
             if selector(j, i):
-                list_tiles.append(("./val/", (j, i)))
+                list_tiles.append((tf_record_out_path_val, (j, i)))
 
     with multiprocessing.get_context("spawn").Pool(processes=n_threads) as p:
         for i, _ in enumerate(p.imap_unordered(

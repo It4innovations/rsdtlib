@@ -30,15 +30,11 @@ import multiprocessing
 n_threads = 2
 
 tf_record_path = "./tf_stack/"
-infer_out_path = "./infer_results/"
-if not os.path.isdir(infer_out_path):
-    os.mkdir(infer_out_path)
 
 # Define the window parameters.
 # Note: This is not yet processing!
 window = rsdtlib.Window(
                   tf_record_path,
-                  None,                  # No need for "tf_record_out_path"
                   60*60*24*30,           # Delta (size)
                   1,                     # window stride
                   10,                    # omega (min. window size)

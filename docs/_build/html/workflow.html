@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Documentation of rsdtlib &mdash; rsdtlib 1.0 documentation</title>
+  <title>Workflow of rsdtlib &mdash; rsdtlib 1.0 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -20,7 +20,8 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Workflow of rsdtlib" href="workflow.html" /> 
+    <link rel="next" title="1st Stage" href="1st_stage.html" />
+    <link rel="prev" title="Documentation of rsdtlib" href="index.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -31,7 +32,7 @@
 
           
           
-          <a href="#" class="icon icon-home">
+          <a href="index.html" class="icon icon-home">
             rsdtlib
           </a>
               <div class="version">
@@ -45,8 +46,8 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <ul>
-<li class="toctree-l1"><a class="reference internal" href="workflow.html">Workflow of <cite>rsdtlib</cite></a></li>
+              <ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Workflow of <cite>rsdtlib</cite></a></li>
 <li class="toctree-l1"><a class="reference internal" href="1st_stage.html">1st Stage</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="1st_stage.html#rsdtlib.Retrieve"><code class="docutils literal notranslate"><span class="pre">rsdtlib.Retrieve</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="1st_stage.html#rsdtlib.Retrieve.get_images"><code class="docutils literal notranslate"><span class="pre">rsdtlib.Retrieve.get_images()</span></code></a></li>
@@ -83,38 +84,65 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="#">rsdtlib</a>
+          <a href="index.html">rsdtlib</a>
       </nav>
 
       <div class="wy-nav-content">
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="#" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">Documentation of <cite>rsdtlib</cite></li>
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Workflow of <cite>rsdtlib</cite></li>
       <li class="wy-breadcrumbs-aside">
-              <a href="https://github.com/it4innovations/rsdtlib/blob/main/docs/index.rst" class="fa fa-github"> Edit on GitHub</a>
+              <a href="https://github.com/it4innovations/rsdtlib/blob/main/docs/workflow.rst" class="fa fa-github"> Edit on GitHub</a>
       </li>
   </ul><div class="rst-breadcrumbs-buttons" role="navigation" aria-label="Sequential page navigation">
-        <a href="workflow.html" class="btn btn-neutral float-right" title="Workflow of rsdtlib" accesskey="n">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="index.html" class="btn btn-neutral float-left" title="Documentation of rsdtlib" accesskey="p"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="1st_stage.html" class="btn btn-neutral float-right" title="1st Stage" accesskey="n">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
   </div>
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <div class="toctree-wrapper compound">
+  <section id="workflow-of-rsdtlib">
+<h1>Workflow of <cite>rsdtlib</cite><a class="headerlink" href="#workflow-of-rsdtlib" title="Permalink to this heading"></a></h1>
+<p>The purpose of <cite>rsdtlib</cite> is to provide an end-to-end solution for three processing stages to prepare a time series of multi-modal remote sensing observations:</p>
+<blockquote>
+<div><ul>
+<li><div class="line-block">
+<div class="line">Stage 1:</div>
+<div class="line">Download remote sensing data directly from Sentinel Hub (i.e. Sentinel 1 &amp; 2), or convert existing <cite>GeoTIFF</cite> files</div>
 </div>
-<section id="documentation-of-rsdtlib">
-<h1>Documentation of <cite>rsdtlib</cite><a class="headerlink" href="#documentation-of-rsdtlib" title="Permalink to this heading"></a></h1>
-<p>This is the documentation of <cite>rsdtlib</cite> found on <a class="reference external" href="https://github.com/It4innovations/rsdtlib/">GitHub</a></p>
+</li>
+<li><div class="line-block">
+<div class="line">Stage 2:</div>
+<div class="line">Temporally stack, assemble and tile these observations</div>
+</div>
+</li>
+<li><div class="line-block">
+<div class="line">Stage 3:</div>
+<div class="line">Create windows of longer time series comprising these observations (i.e. deep-temporal)</div>
+</div>
+</li>
+</ul>
+</div></blockquote>
+<p>Below figure shows the processing pipeline considering all three stages with data formats in orange:</p>
+<figure class="align-default">
+<img alt="_images/rsdtlib_pipeline.png" src="_images/rsdtlib_pipeline.png" />
+</figure>
+<p>Detailed stages 2 and 3 with parameters to control the processes:</p>
+<figure class="align-default">
+<img alt="_images/temporal_stacking_windowing.png" src="_images/temporal_stacking_windowing.png" />
+</figure>
 </section>
 
 
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="workflow.html" class="btn btn-neutral float-right" title="Workflow of rsdtlib" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="index.html" class="btn btn-neutral float-left" title="Documentation of rsdtlib" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="1st_stage.html" class="btn btn-neutral float-right" title="1st Stage" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

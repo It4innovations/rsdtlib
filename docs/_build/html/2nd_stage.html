@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>2nd Stage &mdash; rsdtlib 1.0 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="3rd Stage" href="3rd_stage.html" />
+    <link rel="prev" title="1st Stage" href="1st_stage.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            rsdtlib
+          </a>
+              <div class="version">
+                1.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="workflow.html">Workflow of <cite>rsdtlib</cite></a></li>
+<li class="toctree-l1"><a class="reference internal" href="1st_stage.html">1st Stage</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="1st_stage.html#rsdtlib.Retrieve"><code class="docutils literal notranslate"><span class="pre">rsdtlib.Retrieve</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="1st_stage.html#rsdtlib.Retrieve.get_images"><code class="docutils literal notranslate"><span class="pre">rsdtlib.Retrieve.get_images()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="1st_stage.html#rsdtlib.Convert"><code class="docutils literal notranslate"><span class="pre">rsdtlib.Convert</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="1st_stage.html#rsdtlib.Convert.process"><code class="docutils literal notranslate"><span class="pre">rsdtlib.Convert.process()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">2nd Stage</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#rsdtlib.Stack"><code class="docutils literal notranslate"><span class="pre">rsdtlib.Stack</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#rsdtlib.Stack.process"><code class="docutils literal notranslate"><span class="pre">rsdtlib.Stack.process()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="3rd_stage.html">3rd Stage</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="3rd_stage.html#rsdtlib.Window"><code class="docutils literal notranslate"><span class="pre">rsdtlib.Window</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="3rd_stage.html#rsdtlib.Window.get_infer_dataset"><code class="docutils literal notranslate"><span class="pre">rsdtlib.Window.get_infer_dataset()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="3rd_stage.html#rsdtlib.Window.get_num_tiles"><code class="docutils literal notranslate"><span class="pre">rsdtlib.Window.get_num_tiles()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="3rd_stage.html#rsdtlib.Window.windows_list"><code class="docutils literal notranslate"><span class="pre">rsdtlib.Window.windows_list()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="3rd_stage.html#rsdtlib.Window.write_tf_files"><code class="docutils literal notranslate"><span class="pre">rsdtlib.Window.write_tf_files()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">rsdtlib</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">2nd Stage</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/it4innovations/rsdtlib/blob/main/docs/2nd_stage.rst" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul><div class="rst-breadcrumbs-buttons" role="navigation" aria-label="Sequential page navigation">
+        <a href="1st_stage.html" class="btn btn-neutral float-left" title="1st Stage" accesskey="p"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="3rd_stage.html" class="btn btn-neutral float-right" title="3rd Stage" accesskey="n">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+  </div>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="nd-stage">
+<h1>2nd Stage<a class="headerlink" href="#nd-stage" title="Permalink to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="rsdtlib.Stack">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rsdtlib.</span></span><span class="sig-name descname"><span class="pre">Stack</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sar_asc_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sar_dsc_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">opt_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sar_bands_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sar_mask_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">opt_bands_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">opt_mask_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tf_record_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">starttime</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">endtime</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delta_step</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tile_size_x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tile_size_y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bands_sar</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bands_opt</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rsdtlib.Stack" title="Permalink to this definition"></a></dt>
+<dd><p>Class for stacking, assembling and tiling. The stacking is independent of
+each observation type. Assembling combines all observations over time, of
+types optical multispectral, and Synthetic Aperture Radar (SAR) in
+ascending and descending orbit directions.</p>
+<p>Note: Even though the <code class="docutils literal notranslate"><span class="pre">starttime</span></code> might be later, earlier observations
+are still considered for stacking. That is, earlier observation pixels are
+carried forward if masked at <code class="docutils literal notranslate"><span class="pre">starttime</span></code>. However, only observation time
+stamps are effectively written, that are within the time frame of
+<code class="docutils literal notranslate"><span class="pre">starttime</span></code> and <code class="docutils literal notranslate"><span class="pre">endtime</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sar_asc_path</strong> (<em>str</em>) – Directory of SAR observations (ascending)</p></li>
+<li><p><strong>sar_dsc_path</strong> (<em>str</em>) – Directory of SAR observations (descending)</p></li>
+<li><p><strong>opt_path</strong> (<em>str</em>) – Directory of optical multispectral observations</p></li>
+<li><p><strong>sar_bands_name</strong> (<em>str</em>) – Name of the SAR bands</p></li>
+<li><p><strong>sar_mask_name</strong> (<em>str</em>) – Name of the SAR mask</p></li>
+<li><p><strong>opt_bands_name</strong> (<em>str</em>) – Name of the optical multispectral bands</p></li>
+<li><p><strong>opt_mask_name</strong> (<em>str</em>) – Name of the optical multispectral mask</p></li>
+<li><p><strong>tf_record_path</strong> (<em>str</em>) – Tensorflow Record path to store results</p></li>
+<li><p><strong>starttime</strong> (<em>datetime.datetime</em>) – Starting time of the time series to consider</p></li>
+<li><p><strong>endtime</strong> (<em>datetime.datetime</em>) – End time of the time series to rconsider</p></li>
+<li><p><strong>delta_step</strong> (<em>int</em>) – The step value (<span class="math notranslate nohighlight">\(\delta\)</span>) to avoid redundant
+observations temporally close together</p></li>
+<li><p><strong>tile_size_x</strong> (<em>int</em>) – Tile size in <code class="docutils literal notranslate"><span class="pre">x</span></code> dimension</p></li>
+<li><p><strong>tile_size_y</strong> (<em>int</em>) – Tile size in <code class="docutils literal notranslate"><span class="pre">y</span></code> dimension</p></li>
+<li><p><strong>bands_sar</strong> (<em>int</em>) – Number of SAR bands for each orbit direction
+(<span class="math notranslate nohighlight">\(b_{SAR}^{[asc\mid dsc]}\)</span>)</p></li>
+<li><p><strong>bands_opt</strong> (<em>int</em>) – Number of optical multispectral bands (<span class="math notranslate nohighlight">\(b_{OPT}\)</span>)</p></li>
+</ul>
+</dd>
+</dl>
+<p><strong>Example:</strong></p>
+<p>Define the stacking, assembling, and tiling with different parameters.
+Observations are taken from <code class="docutils literal notranslate"><span class="pre">sar_asc_path</span></code>/<code class="docutils literal notranslate"><span class="pre">sar_dsc_path</span></code> for SAR data,
+and <code class="docutils literal notranslate"><span class="pre">opt_path</span></code> for optical multispectral data. The SAR and optical bands
+(“L1_GND” and “L1C_data”), and their masks (“dataMask” each) are
+explicitly specified. The timeframe to consider for stacking is 01-01-2017
+till 01-07-2017. The step value <span class="math notranslate nohighlight">\(\delta\)</span> is set to two days, and
+<code class="docutils literal notranslate"><span class="pre">y</span></code> and <code class="docutils literal notranslate"><span class="pre">x</span></code> sizes of the tiles to 32 pixels each. The number of bands
+<span class="math notranslate nohighlight">\(b_{SAR}^{[asc\mid dsc]}\)</span> is two (for each oribt direction), and
+<span class="math notranslate nohighlight">\(b_{OPT}\)</span> is 13.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">rsdtlib</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+
+<span class="n">sar_asc_path</span> <span class="o">=</span> <span class="s2">&quot;&lt;SOURCE PATH OF S1 ASC OBSERVATIONS&gt;&quot;</span>
+<span class="n">sar_dsc_path</span> <span class="o">=</span> <span class="s2">&quot;&lt;SOURCE PATH OF S1 DSC OBSERVATIONS&gt;&quot;</span>
+<span class="n">opt_path</span> <span class="o">=</span> <span class="s2">&quot;&lt;SOURCE PATH OF S2 OBSERVATIONS&gt;&quot;</span>
+<span class="n">tf_record_path</span> <span class="o">=</span> <span class="s2">&quot;&lt;DESTINATION PATH OF TFRECORD FILES&gt;&quot;</span>
+
+<span class="n">stack</span> <span class="o">=</span> <span class="n">rsdtlib</span><span class="o">.</span><span class="n">Stack</span><span class="p">(</span>
+                <span class="n">sar_asc_path</span><span class="p">,</span>
+                <span class="n">sar_dsc_path</span><span class="p">,</span>
+                <span class="n">opt_path</span><span class="p">,</span>
+                <span class="s2">&quot;L1_GND&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;dataMask&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;L1C_data&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;dataMask&quot;</span><span class="p">,</span>
+                <span class="n">tf_record_path</span><span class="p">,</span>
+                <span class="n">datetime</span><span class="p">(</span><span class="mi">2017</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+                <span class="n">datetime</span><span class="p">(</span><span class="mi">2017</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+                <span class="mi">60</span><span class="o">*</span><span class="mi">60</span><span class="o">*</span><span class="mi">24</span><span class="o">*</span><span class="mi">2</span><span class="p">,</span>   <span class="c1"># every two days</span>
+                <span class="mi">32</span><span class="p">,</span>           <span class="c1"># tile size x</span>
+                <span class="mi">32</span><span class="p">,</span>           <span class="c1"># tile size y</span>
+                <span class="mi">2</span><span class="p">,</span>            <span class="c1"># bands SAR</span>
+                <span class="mi">13</span><span class="p">)</span>           <span class="c1"># bands opt</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="rsdtlib.Stack.process">
+<span class="sig-name descname"><span class="pre">process</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rsdtlib.Stack.process" title="Permalink to this definition"></a></dt>
+<dd><p>Start the stacking, assembling and tiling process.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+<p><strong>Example:</strong></p>
+<p>Start the stacking, assembling, and tiling process as defined by
+the object <code class="docutils literal notranslate"><span class="pre">stack</span></code>. This will require significant compute resources
+depending on the amount of stacked observations.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">stack</span><span class="o">.</span><span class="n">process</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="1st_stage.html" class="btn btn-neutral float-left" title="1st Stage" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="3rd_stage.html" class="btn btn-neutral float-right" title="3rd Stage" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Georg Zitzlsberger.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

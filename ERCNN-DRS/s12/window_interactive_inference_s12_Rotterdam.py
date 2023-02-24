@@ -32,8 +32,7 @@ n_threads = 4
 dst_path = "./Rotterdam/"
 tf_record_path = "{}/tf_stack/".format(dst_path)
 infer_out_path = "{}/infer_results/".format(dst_path)
-if not os.path.isdir(infer_out_path):
-    os.mkdir(infer_out_path)
+os.mkdirs(infer_out_path, exist_ok=True)
 
 model_path = "./model/"
 best_weights_file = "{}/best_weights_ercnn_drs.hdf5".format(model_path)
@@ -45,7 +44,6 @@ tile_size_y = 32
 # Note: This is not yet processing!
 window = rsdtlib.Window(
                   tf_record_path,
-                  None,                  # No need for "tf_record_out_path"
                   60*60*24*182,          # Delta (size)
                   5,                     # window stride
                   35,                    # omega (min. window size)

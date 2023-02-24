@@ -30,15 +30,13 @@ import multiprocessing
 n_threads = 2
 
 tf_record_path = "./tf_stack/"
-tf_record_out_path = "./tf_window/"
-if not os.path.isdir(tf_record_out_path):
-    os.mkdir(tf_record_out_path)
+tf_record_out_path = "./tf_window/infer/"
+os.mkdirs(tf_record_out_path, exist_ok=True)
 
 # Define the window parameters.
 # Note: This is not yet processing!
 window = rsdtlib.Window(
                   tf_record_path,
-                  tf_record_out_path,
                   60*60*24*30,           # Delta (size)
                   1,                     # window stride
                   10,                    # omega (min. window size)
@@ -78,7 +76,7 @@ if __name__ == "__main__":
     for j in range(0, num_tiles_y):
         for i in range(0, num_tiles_x):
             if selector(j, i):
-                list_tiles.append(("./infer/", (j, i)))
+                list_tiles.append((tf_record_out_path, (j, i)))
 
     with multiprocessing.get_context("spawn").Pool(processes=n_threads) as p:
         for i, _ in enumerate(p.imap_unordered(
