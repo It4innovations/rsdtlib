@@ -20,6 +20,7 @@ The documentation is hosted on Github Pages [here](https://it4innovations.github
 
 # Example
 All examples are in folder [examples](./examples). These examples, as shown below, demonstrate each stage.
+
 *Note:* Except for the download stage, all examples can be executed directly. For the download stage, the credentials for `Sentinel Hub` need to be added to the script to work.
 
 ## Stage 1: Download or Convert
