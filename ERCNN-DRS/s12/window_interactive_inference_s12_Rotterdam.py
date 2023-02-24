@@ -48,7 +48,7 @@ window = rsdtlib.Window(
                   5,                     # window stride
                   35,                    # omega (min. window size)
                   math.ceil(182/2) + 1,  # Omega (max. window size)
-                  False,                 # generate labels
+                  False,                 # generate triplet
                   n_threads = n_threads) # number of threads to use
 
 def infer_it(tile):
