@@ -1148,15 +1148,6 @@ class Window:
     :type omega: int
     :param Omega: Maximum window size in number of observations (:math:`\\Omega`)
     :type Omega: int
-    :param tile_size_x: Tile size in ``x`` dimension
-    :type tile_size_x: int
-    :param tile_size_y: Tile size in ``y`` dimension
-    :type tile_size_y: int
-    :param bands_sar: Number of SAR bands for each orbit direction
-        (:math:`b_{SAR}^{[asc\mid dsc]}`)
-    :type bands_sar: int
-    :param bands_opt: Number of optical multispectral bands (:math:`b_{OPT}`)
-    :type bands_opt: int
     :param generate_triple: Indicate whether a window triplet should be
         generated or just a single window
     :type generate_triple: boolean

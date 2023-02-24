@@ -6,7 +6,7 @@ The purpose of `rsdtlib` is to provide an end-to-end solution for three processi
     - | Stage 1:
       | Download remote sensing data directly from Sentinel Hub (i.e. Sentinel 1 & 2), or convert existing `GeoTIFF` files
     - | Stage 2:
-      | Temporally stack, assemble and tile these observations
+      | Temporally stack, assemble, and tile these observations
     - | Stage 3:
       | Create windows of longer time series comprising these observations (i.e. deep-temporal)
 
