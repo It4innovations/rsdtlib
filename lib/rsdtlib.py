@@ -691,6 +691,12 @@ class Stack:
 
     """
     from enum import Enum as _Enum
+    class _RS_Type(_Enum):
+        UNKOWN = -1
+        OPT = 0
+        SAR_ASC = 1
+        SAR_DSC = 2
+
 
     def __init__(self,
                  sar_asc_path,
@@ -723,13 +729,6 @@ class Stack:
         self.tile_size_y = tile_size_y
         self.bands_sar = bands_sar
         self.bands_opt = bands_opt
-
-
-    class _RS_Type(_Enum):
-        UNKOWN = -1
-        OPT = 0
-        SAR_ASC = 1
-        SAR_DSC = 2
 
 
     def _getEOPatches(self, path_root):
@@ -922,7 +921,7 @@ class Stack:
             new_sar_dsc = False
             new_opt = False
             for item in timestep[1]: # Expected is one item due to no collisions
-                if item[0] == _RS_Type.SAR_ASC:
+                if item[0] == self._RS_Type.SAR_ASC:
                     new_patch = EOPatch.load(item[1])
                     new_frame = np.where(                                      \
                         new_patch.mask[self.sar_mask_name]                     \
@@ -937,7 +936,7 @@ class Stack:
                                                 0:self.bands_sar])
                     prev_frame_SAR_ascending = new_frame
                     new_sar_asc = True
-                elif item[0] == _RS_Type.SAR_DSC:
+                elif item[0] == self._RS_Type.SAR_DSC:
                     new_patch = EOPatch.load(item[1])
                     new_frame = np.where(
                         new_patch.mask[self.sar_mask_name]                     \
@@ -952,7 +951,7 @@ class Stack:
                                                  0:self.bands_sar])
                     prev_frame_SAR_descending = new_frame
                     new_sar_dsc = True
-                elif item[0] == _RS_Type.OPT:
+                elif item[0] == self._RS_Type.OPT:
                     new_patch = EOPatch.load(item[1])
                     new_frame = np.where(
                         new_patch.mask[self.opt_mask_name]                     \
@@ -1050,6 +1049,7 @@ class Stack:
 
         """
         import tensorflow as tf
+        import json
 
         all_files_OPT = self._getEOPatches(self.opt_path)
         all_files_SAR_ascending = self._getEOPatches(self.sar_asc_path)
@@ -1069,12 +1069,12 @@ class Stack:
         for typ in all_files_OPT +                                             \
                    all_files_SAR_ascending +                                   \
                    all_files_SAR_descending:
-            this_type = _RS_Type.OPT if typ in all_files_OPT else              \
-                        _RS_Type.SAR_ASC if typ in                             \
+            this_type = self._RS_Type.OPT if typ in all_files_OPT else         \
+                        self._RS_Type.SAR_ASC if typ in                        \
                                                 all_files_SAR_ascending else   \
-                        _RS_Type.SAR_DSC if typ in                             \
+                        self._RS_Type.SAR_DSC if typ in                        \
                                                 all_files_SAR_descending else  \
-                        _RS_Type.UNKOWN
+                        self._RS_Type.UNKOWN
 
             match_idx = [idx for idx, x in enumerate(list_time_stamps)         \
                          if x[0] == typ[0]]
@@ -1120,6 +1120,19 @@ class Stack:
             for i in range(0, num_tiles_x):
                 tfr_tile_files[j][i].close()
 
+        # Write metadata
+        print("Writing metadata")
+        metadata_dict = {
+            "tile_size_y": self.tile_size_y,
+            "tile_size_x": self.tile_size_x,
+            "bands_sar": self.bands_sar,
+            "bands_opt": self.bands_opt
+        }
+        json_object = json.dumps(metadata_dict, indent=2)
+        with open(self.tf_record_path +                                        \
+                  "metadata.json", "w") as metadata_json_file:
+            metadata_json_file.write(json_object)
+
 
 class Window:
     """
@@ -1163,28 +1176,29 @@ class Window:
                  window_stride,
                  omega,
                  Omega,
-                 tile_size_x,
-                 tile_size_y,
-                 bands_sar,
-                 bands_opt,
                  generate_triple,
                  n_threads = 1,
                  use_new_save = False):
         import math
+        import json
 
         self.tf_record_path = tf_record_path
         self.tf_record_out_path = tf_record_out_path
         self.delta_size = delta_size
-        self.tile_size_x = tile_size_x
-        self.tile_size_y = tile_size_y
         self.window_stride = window_stride
         self.omega = omega
         self.Omega = Omega
-        self.bands_sar = bands_sar
-        self.bands_opt = bands_opt
         self.generate_triple = generate_triple
         self.n_threads = n_threads
         self.use_new_save = use_new_save
+
+        with open(self.tf_record_path +                                        \
+                  "metadata.json", "r") as metadata_json_file:
+            json_object = json.load(metadata_json_file)
+            self.tile_size_y = json_object["tile_size_y"]
+            self.tile_size_x = json_object["tile_size_x"]
+            self.bands_sar = json_object["bands_sar"]
+            self.bands_opt = json_object["bands_opt"]
 
 #        if self.use_new_save == False:
 #            assert self.n_threads == 1, "TFRecordWriter only allows one thread!"

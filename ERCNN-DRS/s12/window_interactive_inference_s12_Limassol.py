@@ -50,10 +50,6 @@ window = rsdtlib.Window(
                   5,                     # window stride
                   35,                    # omega (min. window size)
                   math.ceil(182/2) + 1,  # Omega (max. window size)
-                  tile_size_x,           # tile size x
-                  tile_size_y,           # tile size y
-                  2,                     # bands SAR
-                  13,                    # bands opt
                   False,                 # generate labels
                   n_threads = n_threads) # number of threads to use
 

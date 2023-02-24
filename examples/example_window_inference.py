@@ -43,10 +43,6 @@ window = rsdtlib.Window(
                   1,                     # window stride
                   10,                    # omega (min. window size)
                   16,                    # Omega (max. window size)
-                  32,                    # tile size x
-                  32,                    # tile size y
-                  2,                     # bands SAR
-                  13,                    # bands opt
                   False,                 # generate triplet
                   n_threads=n_threads,   # number of threads to use
                   use_new_save=False)    # new TF Dataset save
