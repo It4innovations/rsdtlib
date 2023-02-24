@@ -2,7 +2,7 @@
 
 This project provides a Python module that allows:
 - **Stage 1:** Download remote sensing data directly from [Sentinel Hub](https://www.sentinel-hub.com/) (i.e. Sentinel 1 & 2), or convert existing `GeoTIFF` files
-- **Stage 2:** Temporally stack, assemble and tile these observations
+- **Stage 2:** Temporally stack, assemble, and tile these observations
 - **Stage 3:** Create windows of longer time series comprising these observations (i.e. deep-temporal)
 
 Below figure shows the processing pipeline considering all three stages:

@@ -61,7 +61,8 @@ def write_it(args):
 
     gen_label = lambda window, label_args:                                     \
                   (tf.concat(
-                        # Only serialize current window (index 1)
+                        # Only serialize current window (index 0)
+                        # Note: There is only the current one due to no triplets
                         [window[0][1][:, :, :, :],  # SAR ascending
                          window[0][2][:, :, :, :],  # SAR descending
                          window[0][3][:, :, :, :]], # optical
