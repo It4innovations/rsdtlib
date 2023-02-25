@@ -1262,29 +1262,6 @@ class Window:
         return timestamp, sar_ascending, sar_descending, opt
 
 
-    def _get_windows(self, timestamp, sar_ascending, sar_descending, opt):
-        import tensorflow as tf
-
-        def first_only(batch):
-            return tf.broadcast_to(batch[0], [tf.size(batch)])
-
-        ref = timestamp.batch(self.Omega).map(first_only)
-
-        sub = tf.data.Dataset.zip((timestamp,
-                                   sar_ascending,
-                                   sar_descending,
-                                   opt))
-        batch = sub.batch(self.Omega)
-        selection = tf.data.Dataset.zip((batch, ref))
-        windows = selection.unbatch()                                          \
-                           .filter(lambda x, y:                                \
-                                   tf.math.less(x[0], y + self.delta_size))    \
-                           .map(lambda x, y: x)                                \
-                           .batch(self.Omega)
-
-        return windows
-
-
     def _get_window(self, timestamp, sar_ascending, sar_descending, opt):
         import tensorflow as tf
 
