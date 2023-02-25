@@ -1180,7 +1180,7 @@ class Window:
         tf_record_path = "<SOURCE PATH STACKED TFRECORD FILES>"
 
         window = rsdtlib.Window(
-                      tf_record_path,        # Stacked TFRecord file path
+                      tf_record_path,        # stacked TFRecord file path
                       60*60*24*30,           # Delta (size)
                       1,                     # window stride
                       10,                    # omega (min. window size)
