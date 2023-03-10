@@ -713,7 +713,9 @@ class Stack:
                  tile_size_x,
                  tile_size_y,
                  bands_sar,
-                 bands_opt):
+                 bands_opt,
+                 deadzone_x = 0,
+                 deadzone_y = 0):
         self.sar_asc_path = sar_asc_path
         self.sar_dsc_path = sar_dsc_path
         self.opt_path = opt_path
@@ -729,6 +731,8 @@ class Stack:
         self.tile_size_y = tile_size_y
         self.bands_sar = bands_sar
         self.bands_opt = bands_opt
+        self.deadzone_x = deadzone_x
+        self.deadzone_y = deadzone_y
 
 
     def _getEOPatches(self, path_root):
@@ -846,7 +850,10 @@ class Stack:
         stream_t = tf.image.extract_patches(
                 tf.reshape(stream, [1, height, width, channels]),              \
                            sizes=[1, tile_size_y, tile_size_x, 1],             \
-                           strides=[1, tile_size_y, tile_size_x, 1],           \
+                           strides=[1,
+                                    tile_size_y - 2 * self.deadzone_y,
+                                    tile_size_x - 2 * self.deadzone_x,
+                                    1],                                        \
                            rates=[1, 1, 1, 1],                                 \
                            padding="VALID")
         cor_stream_t = tf.reshape(stream_t,                                    \
@@ -1093,8 +1100,10 @@ class Stack:
 
         steps_list = self._get_steps_list(list_time_stamps)
 
-        num_tiles_y = min_height_SAR//self.tile_size_y
-        num_tiles_x = min_width_SAR//self.tile_size_x
+        num_tiles_y = (min_height_SAR - self.deadzone_y)//                     \
+                                        (self.tile_size_y - 2*self.deadzone_y)
+        num_tiles_x = (min_width_SAR - self.deadzone_x)//                      \
+                                        (self.tile_size_x - 2*self.deadzone_x)
 
         # Open all TFRecord files for writing
         tfr_options = tf.io.TFRecordOptions(compression_type="GZIP")
@@ -1126,7 +1135,9 @@ class Stack:
             "tile_size_y": self.tile_size_y,
             "tile_size_x": self.tile_size_x,
             "bands_sar": self.bands_sar,
-            "bands_opt": self.bands_opt
+            "bands_opt": self.bands_opt,
+            "deadzone_y": self.deadzone_y,
+            "deadzone_x": self.deadzone_x
         }
         json_object = json.dumps(metadata_dict, indent=2)
         with open(self.tf_record_path +                                        \
