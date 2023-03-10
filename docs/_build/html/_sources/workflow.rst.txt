@@ -10,11 +10,11 @@ The purpose of `rsdtlib` is to provide an end-to-end solution for three processi
     - | Stage 3:
       | Create windows of longer time series comprising these observations (i.e. deep-temporal)
 
-Below figure shows the processing pipeline considering all three stages with data formats in orange:
+Below figure shows the processing pipeline considering all three stages with data formats in orange.
 
 .. figure:: ../images/rsdtlib_pipeline.png
 
-Detailed stages 2 and 3 with parameters to control the processes:
+In the following, stages 2 and 3 are detailed with parameters to control the processes.
 
 .. figure:: ../images/temporal_stacking_windowing.png
 
