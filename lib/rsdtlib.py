@@ -650,10 +650,10 @@ class Stack:
     :param bands_opt: Number of optical multispectral bands (:math:`b_{OPT}`)
     :type bands_opt: int
     :param deadzone_x: Overlap tiles on x-axis so that neighboring tiles share
-        ``2*deadzone_x`` pixels per side.
+        ``2*deadzone_x`` pixels per side (default = ``0``)
     :type deadzone_x: int
     :param deadzone_y: Overlap tiles on y-axis so that neighboring tiles share
-        ``2*deadzone_y`` pixels per side.
+        ``2*deadzone_y`` pixels per side (default = ``0``)
     :type deadzone_y: int
 
     **Example:**

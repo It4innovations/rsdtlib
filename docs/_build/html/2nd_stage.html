@@ -113,6 +113,7 @@
 <img alt="_images/temporal_stacking_windowing.png" src="_images/temporal_stacking_windowing.png" />
 </figure>
 <p>In case of overlapping tiles (<code class="docutils literal notranslate"><span class="pre">deadzone_x</span> <span class="pre">&gt;</span> <span class="pre">0</span></code> and/or <code class="docutils literal notranslate"><span class="pre">deadzone_y</span> <span class="pre">&gt;</span> <span class="pre">0</span></code>), the image below shows the tile arrangement. The example only considers the neighboring tiles on the left/bottom of the blue tile. The same applies for neighboring tiles in the other directions.</p>
+<p>Note: The overlap of tiles is always <code class="docutils literal notranslate"><span class="pre">deadzone_[x|y]</span> <span class="pre">*</span> <span class="pre">2</span></code> due to symmetries.</p>
 <figure class="align-default">
 <img alt="_images/tiles_overlap.png" src="_images/tiles_overlap.png" />
 </figure>
@@ -149,9 +150,9 @@ observations temporally close together</p></li>
 (<span class="math notranslate nohighlight">\(b_{SAR}^{[asc\mid dsc]}\)</span>)</p></li>
 <li><p><strong>bands_opt</strong> (<em>int</em>) – Number of optical multispectral bands (<span class="math notranslate nohighlight">\(b_{OPT}\)</span>)</p></li>
 <li><p><strong>deadzone_x</strong> (<em>int</em>) – Overlap tiles on x-axis so that neighboring tiles share
-<code class="docutils literal notranslate"><span class="pre">2*deadzone_x</span></code> pixels per side.</p></li>
+<code class="docutils literal notranslate"><span class="pre">2*deadzone_x</span></code> pixels per side (default = <code class="docutils literal notranslate"><span class="pre">0</span></code>)</p></li>
 <li><p><strong>deadzone_y</strong> (<em>int</em>) – Overlap tiles on y-axis so that neighboring tiles share
-<code class="docutils literal notranslate"><span class="pre">2*deadzone_y</span></code> pixels per side.</p></li>
+<code class="docutils literal notranslate"><span class="pre">2*deadzone_y</span></code> pixels per side (default = <code class="docutils literal notranslate"><span class="pre">0</span></code>)</p></li>
 </ul>
 </dd>
 </dl>
