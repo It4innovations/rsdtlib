@@ -120,7 +120,20 @@ Note that labels are not created in any of the inference examples, but is possib
 In our previous work of [ERCNN-DRS Urban Change Monitoring](https://github.com/It4innovations/ERCNN-DRS_urban_change_monitoring) the time series processing of (an early version of) `rsdtlib` was used. See subdirectory [`./ERCNN-DRS`](./ERCNN-DRS) for the pre-processing scripts.
 
 # Paper and Citation
-TBD
+The full paper can be found at [SoftwareX](https://doi.org/10.1016/j.softx.2023.101369).
+
+    @Article{ZITZLSBERGER2023101369,
+      AUTHOR = {Georg Zitzlsberger and Michal Podhoranyi and Jan Martinovič},
+      TITLE = {rsdtlib: Remote sensing with deep-temporal data library},
+      JOURNAL = {SoftwareX},
+      VOLUME = {22},
+      YEAR = {2023},
+      PAGES = {101369},
+      URL = {https://www.sciencedirect.com/science/article/pii/S2352711023000651},
+      ISSN = {2352-7110},
+      DOI = {https://doi.org/10.1016/j.softx.2023.101369}
+    }
+
 
 # Contact
 Should you have any feedback or questions, please contact the main author: Georg Zitzlsberger (georg.zitzlsberger(a)vsb.cz).
