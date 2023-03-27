@@ -928,11 +928,11 @@ class Stack:
                 self.bands_sar)
 
         idx = 0
+        new_sar_asc = False
+        new_sar_dsc = False
+        new_opt = False
         print("List of observations to process:")
         for timestep in list_time_stamps:
-            new_sar_asc = False
-            new_sar_dsc = False
-            new_opt = False
             for item in timestep[1]: # Expected is one item due to no collisions
                 if item[0] == self._RS_Type.SAR_ASC:
                     new_patch = EOPatch.load(item[1])
@@ -995,6 +995,7 @@ class Stack:
                         self.tile_size_y,
                         self.tile_size_x,
                         self.bands_sar)
+                new_sar_asc = False
 
             if new_sar_dsc:
                 prev_frame_SAR_descending_t = self._tile_stream(
@@ -1004,6 +1005,7 @@ class Stack:
                         self.tile_size_y,
                         self.tile_size_x,
                         self.bands_sar)
+                new_sar_dsc = False
 
             if new_opt:
                 prev_frame_OPT_t = self._tile_stream(
@@ -1013,6 +1015,7 @@ class Stack:
                         self.tile_size_y,
                         self.tile_size_x,
                         self.bands_opt)
+                new_opt = False
 
             # Write all tiles
             tf_ts = timestep[0].replace(tzinfo=timezone.utc).timestamp()
