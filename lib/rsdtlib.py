@@ -1109,9 +1109,9 @@ class Stack:
 
         steps_list = self._get_steps_list(list_time_stamps)
 
-        num_tiles_y = (min_height_SAR - self.deadzone_y)//                     \
+        num_tiles_y = (min_height_SAR - 2*self.deadzone_y)//                   \
                                         (self.tile_size_y - 2*self.deadzone_y)
-        num_tiles_x = (min_width_SAR - self.deadzone_x)//                      \
+        num_tiles_x = (min_width_SAR - 2*self.deadzone_x)//                    \
                                         (self.tile_size_x - 2*self.deadzone_x)
 
         # Open all TFRecord files for writing
