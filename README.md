@@ -121,6 +121,9 @@ Note that labels are not created in any of the inference examples, but is possib
 # Use rsdtlib for ERCNN-DRS
 In our previous work of [ERCNN-DRS Urban Change Monitoring](https://github.com/It4innovations/ERCNN-DRS_urban_change_monitoring) the time series processing of (an early version of) `rsdtlib` was used. See subdirectory [`./ERCNN-DRS`](./ERCNN-DRS) for the pre-processing scripts.
 
+# Use rsdtlib for monitoring Mariupol, Ukraine
+The `rsdtlib` library was also used in our work of [Monitoring Urban Changes in Mariupol/Ukraine](Monitoring Urban Changes in Mariupol/Ukraine). See subdirectory [`./urban_change_monitoring_mariupol_ua`](./urban_change_monitoring_mariupol_ua) for the pre-processing scripts.
+
 # Paper and Citation
 The full paper can be found at [SoftwareX](https://doi.org/10.1016/j.softx.2023.101369).
 
