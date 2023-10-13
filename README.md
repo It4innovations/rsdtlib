@@ -1,4 +1,4 @@
-<img align="right" src="images/rsdtlib.png" alt="" width="128"/>
+<img align="right" src="images/rsdtlib_128.png" alt="rsdtlib logo"/>
 
 # rsdtlib: Remote Sensing with Deep-Temporal Data Library
 
