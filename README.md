@@ -1,3 +1,5 @@
+<img align="right" src="images/rsdtlib.png" alt="" width="180"/>
+
 # rsdtlib: Remote Sensing with Deep-Temporal Data Library
 
 This project provides a Python module that allows:
