@@ -1,3 +1,23 @@
+**Table of Contents:**
+- [rsdtlib: Remote Sensing with Deep-Temporal Data Library](#rsdtlib-remote-sensing-with-deep-temporal-data-library)
+- [Documentation](#documentation)
+- [Example](#example)
+  * [Stage 1: Download or Convert](#stage-1-download-or-convert)
+    * [Download from Sentinel Hub](#download-from-sentinel-hub)
+    * [Convert GeoTIFF Files](#convert-geotiff-files)
+  * [Stage 2: Stack, Assemble, and Tile](#stage-2-stack-assemble-and-tile)
+  * [Stage 3: Windowing](#stage-3-windowing)
+    * [For Training/Validation Data](#for-trainingvalidation-data)
+    * [For Inference](#for-inference)
+      * [Offline](#offline)
+      * [Online](#online)
+- [Use rsdtlib for ERCNN-DRS](#use-rsdtlib-for-ercnn-drs)
+- [Use rsdtlib for monitoring Mariupol, Ukraine](#use-rsdtlib-for-monitoring-mariupol-ukraine)
+- [Paper and Citation](#paper-and-citation)
+- [Contact](#contact)
+- [Acknowledgments](#acknowledgments)
+- [License](#license)
+
 <img align="right" src="images/rsdtlib_128.png" alt="rsdtlib logo"/>
 
 # rsdtlib: Remote Sensing with Deep-Temporal Data Library
